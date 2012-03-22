@@ -10,8 +10,9 @@
   <artifactId>ReportPlugin</artifactId>
   <version>0.1</version>
   <name>Report Plugin</name>
-  <description>Just a work in progress.</description>
+  <description>Just a work in progress. Forked from TestNG plugin. </description>
   <packaging>hpi</packaging>
+  
 
   <!-- get every artifact through maven.glassfish.org, which proxies all the artifacts that we need -->
   <repositories>

@@ -4,7 +4,7 @@
  */
 package com.redhat.engineering.jenkins.report.plugin;
 
-import com.redhat.engineering.jenkins.report.plugin.results.BuildTestResults;
+import com.redhat.engineering.jenkins.report.plugin.results.MatrixBuildTestResults;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import java.io.Serializable;
@@ -15,7 +15,7 @@ import java.io.Serializable;
  */
 public class ReportPluginBuildAction implements Action, Serializable{
 
-    public ReportPluginBuildAction(AbstractBuild<?, ?> build, BuildTestResults results){
+    public ReportPluginBuildAction(AbstractBuild<?, ?> build, MatrixBuildTestResults results){
 	super();
     }
     

@@ -13,14 +13,14 @@ import org.kohsuke.stapler.export.Exported;
  * 
  * @author Jan Rusnacko (jrusnack at redhat.com)
  */
-public class BuildTestResults extends BaseResult {
-    private List<MethodResult> failedTests;
-    private List<MethodResult> passedTests;
-    private List<MethodResult> skippedTests;
-    private List<MethodResult> failedConfigurationMethods;
-    private List<MethodResult> skippedConfigurationMethods;
+public class MatrixRunTestResults extends BaseResult {
+    private List<MethodResult> passedTests = new ArrayList<MethodResult>();
+    private List<MethodResult> failedTests = new ArrayList<MethodResult>();
+    private List<MethodResult> skippedTests = new ArrayList<MethodResult>();
+    private List<MethodResult> failedConfigurationMethods = new ArrayList<MethodResult>();
+    private List<MethodResult> skippedConfigurationMethods = new ArrayList<MethodResult>();
     private int totalTestCount;
-    private List<TestResult> testList;
+    private List<TestResult> testList = new ArrayList<TestResult>();
     private long duration;
     private int passedTestCount;
     private int failedTestCount;
@@ -30,7 +30,7 @@ public class BuildTestResults extends BaseResult {
     private Map<String, PackageResult> packageMap = new HashMap<String, PackageResult>();
     private AbstractBuild<?, ?> owner;
     
-    public BuildTestResults(String name){
+    public MatrixRunTestResults(String name){
 	super(name);
     }
     
@@ -106,9 +106,9 @@ public class BuildTestResults extends BaseResult {
     }
 
     /**
-	* Adds only the <test>s that already aren't part of the list
-	* @param classList
-	*/
+    * Adds only the <test>s that already aren't part of the list
+    * @param classList
+    */
     public void addUniqueTests(List<TestResult> testList) {
 	Set<TestResult> tmpSet = new HashSet<TestResult>(this.testList);
 	tmpSet.addAll(testList);

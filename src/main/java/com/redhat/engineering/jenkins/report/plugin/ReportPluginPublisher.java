@@ -1,7 +1,8 @@
 
 package com.redhat.engineering.jenkins.report.plugin;
 
-import com.redhat.engineering.jenkins.report.plugin.results.MatrixTestResults;
+import com.redhat.engineering.jenkins.report.plugin.results.MatrixBuildTestResults;
+import com.redhat.engineering.jenkins.report.plugin.results.MatrixRunTestResults;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -77,82 +78,95 @@ public class ReportPluginPublisher extends Recorder{
      * @throws IOException 
      */
     
-//    @Override	    
-//    public boolean perform(AbstractBuild<?,?> build, Launcher launcher,
-//	BuildListener listener) throws InterruptedException, IOException{
-//	
-//	/* Only for matrix projects now
-//	 * TODO: add also for other types of build (like free style projects, 
-//       * even though already implemented in TestNG plugin and JUnit publish)
-//	 */
-//	if(!(build instanceof MatrixBuild)){
-//	    return false;
-//	}
-//	
-//	PrintStream logger = listener.getLogger();
-//	logger.println("[Report Plugin] Report files processing: START");
-//	
-//	/*
-//	 * MatrixTestResults will store mapping matrix run -> test results
-//	 */
-//	MatrixTestResults results = new MatrixTestResults("");
-//	
-//	/*
-//	 * Iterate over all runs in matrix build 
-//	 */
-//	MatrixBuild mbuild = (MatrixBuild) build;
-//	for(MatrixRun mrun: mbuild.getRuns()){
-//	    logger.println("[Report Plugin] Starting to process Matrix Run.");
-//	    logger.println("[Report Plugin] Looking for results reports in workspace"
-//		+ " using pattern: " + reportLocationPattern);
-//	    
-//	    
-//	    FilePath[] paths = locateReports(build.getWorkspace(), reportLocationPattern);
-//	    if (paths.length == 0) {
-//		logger.println("Did not find any matching files.");
-//		//build can still continue
-//		return true;
-//	    }
-//	    
-//	    /*
-//	    * filter out the reports based on timestamps. See JENKINS-12187
-//	    */
-//	    paths = checkReports(build, paths, logger);
-//	    
-//	    
-//	    boolean filesSaved = saveReports(getReportDir(mrun), paths, logger);
-//	    if (!filesSaved) {
-//		logger.println("Failed to save TestNG XML reports");
-//		return true;
-//	    }
-//	    
-//	    try {
-//		results.addMatrixTestResults(mrun, ReportPluginBuildAction.loadResults(mrun, logger));
-//	    } catch (Throwable t) {
-//		/*
-//		* don't fail build if parser barfs, only 
-//		* print out the exception to console.
-//		*/
-//		t.printStackTrace(logger);
-//	    } 
-//	    
-//	    if (results.getFailedConfigCount() > 0 || results.getFailedTestCount() > 0) {
-//		mrun.setResult(Result.UNSTABLE);
-//	    } 
-//	    
-//	    if(results.getResults(mrun).getTestList().getSize <= 0){
-//		logger.println("[Report Plugin] Found matching files but did not find any reports.");
-//		return true;
-//	    }
-//	    logger.println("[Report Plugin] Finished processing Matrix Run.");
-//	}
-//	
-//	ReportPluginBuildAction action = new ReportPluginBuildAction(mbuild, results);
-//	mbuild.getActions().add(action);
-//	
-//	logger.println("[Report Plugin] Report Processing: FINISH");
-//	return true;
-//    }
+    @Override	    
+    public boolean perform(AbstractBuild<?,?> build, Launcher launcher,
+	BuildListener listener) throws InterruptedException, IOException{
+	
+	/* Only for matrix projects now
+	 * TODO: add also for other types of build (like free style projects, 
+         * even though already implemented in TestNG plugin and JUnit publish)
+	 */
+	if(!(build instanceof MatrixBuild)){
+	    return false;
+	}
+	
+	PrintStream logger = listener.getLogger();
+	logger.println("[Report Plugin] Report files processing: START");
+	
+	/*
+	 * MatrixBuildTestResults will store mapping matrix run -> test results
+	 */
+	MatrixBuildTestResults bResults = new MatrixBuildTestResults("");
+	
+	/*
+	 * Iterate over all runs in matrix build 
+	 */
+	MatrixBuild mbuild = (MatrixBuild) build;
+	for(MatrixRun mrun: mbuild.getRuns()){
+	    logger.println("[Report Plugin] Starting to process Matrix Run.");
+	    logger.println("[Report Plugin] Looking for results reports in workspace"
+		+ " using pattern: " + reportLocationPattern);
+	    
+	    
+	    FilePath[] paths = locateReports(mrun.getWorkspace(), reportLocationPattern);
+	    if (paths.length == 0) {
+		logger.println("Did not find any matching files.");
+		//build can still continue
+		return true;
+	    }
+	    
+	    /*
+	    * filter out the reports based on timestamps. See JENKINS-12187
+	    */
+	    paths = checkReports(build, paths, logger);
+	    
+	    
+	    boolean filesSaved = saveReports(getReportDir(mrun), paths, logger);
+	    if (!filesSaved) {
+		logger.println("Failed to save TestNG XML reports");
+		return true;
+	    }
+	    
+	    MatrixRunTestResults rResults = new MatrixRunTestResults("");
+	    
+	    /*
+	     * Parse results
+	     */
+	    try {
+		rResults = ReportPluginRunAction.loadResults(mrun, logger);
+	    } catch (Throwable t) {
+		/*
+		* don't fail build if parser barfs, only 
+		* print out the exception to console.
+		*/
+		t.printStackTrace(logger);
+	    } 
+	    
+	    if (rResults.getTestList().size() > 0) {
+		//create an individual report for all of the results and add it to the build results
+		bResults.addMatrixTestResults(mrun, rResults);
+		if (rResults.getFailedConfigCount() > 0 || rResults.getFailedTestCount() > 0) {
+		    build.setResult(Result.UNSTABLE);
+		}
+	    } else {
+		logger.println("Found matching files but did not find any test results.");
+		return true;
+	    } 
+	    
+	    /*
+	     * Add matrix run rResults to parent build`s bResults
+	     */ 
+	    bResults.addMatrixTestResults(mrun, rResults);
+	    
+	    logger.println("[Report Plugin] Finished processing Matrix Run.");
+	}
+	
+	ReportPluginBuildAction action = new ReportPluginBuildAction(mbuild, bResults);
+	mbuild.getActions().add(action);
+	
+	logger.println("[Report Plugin] Report Processing: FINISH");
+	return true;
+    }
 
 
     public static FilePath[] locateReports(FilePath workspace, String reportLocationPattern)
@@ -185,7 +199,7 @@ public class ReportPluginPublisher extends Recorder{
      * Filter out the reports based on timestamps. Those with timestamp earlier 
      * than start of build are to be ignored. See JENKINS-12187
      */
-    static FilePath[] checkReports(AbstractBuild<?,?> build, FilePath[] paths,
+    public static FilePath[] checkReports(AbstractBuild<?,?> build, FilePath[] paths,
             PrintStream logger){
 	List<FilePath> filePathList = new ArrayList<FilePath>(paths.length);
 
