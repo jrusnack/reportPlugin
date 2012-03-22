@@ -76,8 +76,7 @@ public class ReportPluginPublisher extends Recorder{
      * @return		    true if build can continue
      * @throws InterruptedException
      * @throws IOException 
-     */
-    
+     */    
     @Override	    
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher,
 	BuildListener listener) throws InterruptedException, IOException{

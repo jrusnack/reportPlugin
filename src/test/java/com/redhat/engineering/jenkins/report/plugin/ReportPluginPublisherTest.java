@@ -6,6 +6,10 @@ package com.redhat.engineering.jenkins.report.plugin;
 
 import hudson.FilePath;
 import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.*;
 
 /**
@@ -109,5 +113,27 @@ public class ReportPluginPublisherTest {
      */
     @Test
     public void testGetReportDir() {
+    }
+    
+    @Test
+    public void testSaveReports() throws Exception{
+	// Create a temporary workspace in the system
+	File w = File.createTempFile("workspace", ".test");
+	w.delete();
+	w.mkdir();
+	w.deleteOnExit();
+	FilePath workspace = new FilePath(w);
+	// Create file in the workspace
+	File f = File.createTempFile("testng-results", ".xml", w);
+	f.deleteOnExit();
+	FilePath path = new FilePath(f);
+	// Save files in local workspace
+	FilePath local = workspace.child("localfolder");
+	
+	FilePath[] files = new FilePath[1];
+	files[0]= path;
+	boolean saved = ReportPluginPublisher.saveReports(local, files, System.out);
+	junit.framework.Assert.assertTrue(saved);
+	local.deleteRecursive();
     }
 }
