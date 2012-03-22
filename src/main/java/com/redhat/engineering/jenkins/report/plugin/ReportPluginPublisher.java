@@ -16,7 +16,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -80,8 +82,8 @@ public class ReportPluginPublisher extends Recorder{
 //	BuildListener listener) throws InterruptedException, IOException{
 //	
 //	/* Only for matrix projects now
-//	 * TODO: add also for other types of build (even though already implemented
-//	 * in TestNG plugin and JUnit publish)
+//	 * TODO: add also for other types of build (like free style projects, 
+//       * even though already implemented in TestNG plugin and JUnit publish)
 //	 */
 //	if(!(build instanceof MatrixBuild)){
 //	    return false;
@@ -104,7 +106,7 @@ public class ReportPluginPublisher extends Recorder{
 //	    logger.println("[Report Plugin] Looking for results reports in workspace"
 //		+ " using pattern: " + reportLocationPattern);
 //	    
-//	    //TODO: locate results 
+//	    
 //	    FilePath[] paths = locateReports(build.getWorkspace(), reportLocationPattern);
 //	    if (paths.length == 0) {
 //		logger.println("Did not find any matching files.");
@@ -115,10 +117,9 @@ public class ReportPluginPublisher extends Recorder{
 //	    /*
 //	    * filter out the reports based on timestamps. See JENKINS-12187
 //	    */
-//	    //TODO: implement report filtering based on timestamps
 //	    paths = checkReports(build, paths, logger);
 //	    
-//	    //TODO: implement saving reports 
+//	    
 //	    boolean filesSaved = saveReports(getReportDir(mrun), paths, logger);
 //	    if (!filesSaved) {
 //		logger.println("Failed to save TestNG XML reports");
@@ -154,8 +155,30 @@ public class ReportPluginPublisher extends Recorder{
 //    }
 
 
-    private FilePath[] locateReports(FilePath workspace, String reportLocationPattern) {
-	throw new UnsupportedOperationException("Not yet implemented");
+    public static FilePath[] locateReports(FilePath workspace, String reportLocationPattern)
+    throws IOException, InterruptedException{
+	// First use ant-style pattern
+      try {
+         FilePath[] ret = workspace.list(reportLocationPattern);
+         if (ret.length > 0) {
+            return ret;
+         }
+      } catch (Exception e) {}
+
+      // If it fails, do a legacy search
+      List<FilePath> files = new ArrayList<FilePath>();
+      String parts[] = reportLocationPattern.split("\\s*[;:,]+\\s*");
+      for (String path : parts) {
+         FilePath src = workspace.child(path);
+         if (src.exists()) {
+            if (src.isDirectory()) {
+               files.addAll(Arrays.asList(src.list("**/testng*.xml")));
+            } else {
+               files.add(src);
+            }
+         }
+      }
+      return files.toArray(new FilePath[files.size()]);
     }
     
     /**
@@ -164,9 +187,37 @@ public class ReportPluginPublisher extends Recorder{
      */
     static FilePath[] checkReports(AbstractBuild<?,?> build, FilePath[] paths,
             PrintStream logger){
-	
-	//TODO: implement checkReports
-	return paths;
+	List<FilePath> filePathList = new ArrayList<FilePath>(paths.length);
+
+	for (FilePath report : paths) {
+	    /*
+	    * Check that the file was created as part of this build and is not
+	    * something left over from before.
+	    *
+	    * Checks that the last modified time of file is greater than the
+	    * start time of the build
+	    *
+	    */
+	    try {
+		/*
+		* dividing by 1000 and comparing because we want to compare secs
+		* and not milliseconds
+		*/
+		if (build.getTimestamp().getTimeInMillis() / 1000 <= report.lastModified() / 1000) {
+		filePathList.add(report);
+		} else {
+		logger.println(report.getName() + " was last modified before "
+			    + "this build started. Ignoring it.");
+		}
+	    } catch (IOException e) {
+		// just log the exception
+		e.printStackTrace(logger);
+	    } catch (InterruptedException e) {
+		// just log the exception
+		e.printStackTrace(logger);
+	    }
+	}
+	return filePathList.toArray(new FilePath[]{});
     }
     
     /**
@@ -176,8 +227,22 @@ public class ReportPluginPublisher extends Recorder{
 	return new FilePath(new File(build.getRootDir(), "report-plugin"));
     }
 
-    private boolean saveReports(FilePath reportDir, FilePath[] paths, PrintStream logger) {
-	throw new UnsupportedOperationException("Not yet implemented");
+    public static boolean saveReports(FilePath reportDir, FilePath[] paths, PrintStream logger) {
+	logger.println("Saving reports...");
+	try {
+	    reportDir.mkdirs();
+	    int i = 0;
+	    for (FilePath report : paths) {
+		String name = "test-results" + (i > 0 ? "-" + i : "") + ".xml";
+		i++;
+		FilePath dst = reportDir.child(name);
+		report.copyTo(dst);
+	    }
+	} catch (Exception e) {
+	    e.printStackTrace(logger);
+	    return false;
+	}
+	return true;
     }
     
     @Extension
