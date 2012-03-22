@@ -1,6 +1,6 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:bh="/lib/health">
-   <f:entry title="Report Plugin report pattern">
-      <f:textbox name="reportFilenamePattern" value="${instance.reportFilenamePattern}"/>
+   <f:entry title="Report Plugin reports location pattern" >
+      <f:textbox name="reportLocationPattern" value="${instance.reportLocationPattern}"/>
    </f:entry>
 </j:jelly>

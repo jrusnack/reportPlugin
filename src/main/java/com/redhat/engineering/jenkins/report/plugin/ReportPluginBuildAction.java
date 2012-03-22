@@ -4,6 +4,8 @@
  */
 package com.redhat.engineering.jenkins.report.plugin;
 
+import com.redhat.engineering.jenkins.report.plugin.results.BuildTestResults;
+import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import java.io.Serializable;
 
@@ -13,16 +15,20 @@ import java.io.Serializable;
  */
 public class ReportPluginBuildAction implements Action, Serializable{
 
+    public ReportPluginBuildAction(AbstractBuild<?, ?> build, BuildTestResults results){
+	super();
+    }
+    
     public String getIconFileName() {
-	throw new UnsupportedOperationException("Not supported yet.");
+	return Definitions.__ICON_FILE_NAME;
     }
 
     public String getDisplayName() {
-	throw new UnsupportedOperationException("Not supported yet.");
+	return Definitions.__DISPLAY_NAME;
     }
 
     public String getUrlName() {
-	throw new UnsupportedOperationException("Not supported yet.");
+	return Definitions.__URL_NAME;
     }
     
 }

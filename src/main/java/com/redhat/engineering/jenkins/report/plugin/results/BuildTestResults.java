@@ -13,7 +13,26 @@ import org.kohsuke.stapler.export.Exported;
  * 
  * @author Jan Rusnacko (jrusnack at redhat.com)
  */
-public class BuildTestResults {
+public class BuildTestResults extends BaseResult {
+    private List<MethodResult> failedTests;
+    private List<MethodResult> passedTests;
+    private List<MethodResult> skippedTests;
+    private List<MethodResult> failedConfigurationMethods;
+    private List<MethodResult> skippedConfigurationMethods;
+    private int totalTestCount;
+    private List<TestResult> testList;
+    private long duration;
+    private int passedTestCount;
+    private int failedTestCount;
+    private int skippedTestCount;
+    private int failedConfigurationMethodsCount;
+    private int skippedConfigurationMethodsCount;
+    private Map<String, PackageResult> packageMap = new HashMap<String, PackageResult>();
+    private AbstractBuild<?, ?> owner;
+    
+    public BuildTestResults(String name){
+	super(name);
+    }
     
     public List<MethodResult> getFailedTests() {
 	return failedTests;

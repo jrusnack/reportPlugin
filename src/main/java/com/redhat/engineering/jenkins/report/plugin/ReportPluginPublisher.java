@@ -15,6 +15,8 @@ import hudson.tasks.Recorder;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Collection;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -27,12 +29,26 @@ public class ReportPluginPublisher extends Recorder{
     private final String reportLocationPattern;
 
     
-   /*
+   /**
     * Get location of reports from project configuration page
     */
     @DataBoundConstructor
     public ReportPluginPublisher(String reportLocationPattern){
 	this.reportLocationPattern = reportLocationPattern;
+	
+    }
+    
+    /**
+     * Add ReportPluginProjectAction to actions of project if plugin is configured
+     * (path to reports is set)
+     */
+    @Override
+    public Collection<? extends Action> getProjectActions(AbstractProject<?,?> project){
+	Collection<Action> actions = new ArrayList<Action>();
+	if(reportLocationPattern != null){
+	    actions.add(new ReportPluginProjectAction(project));
+	}
+	return actions;
     }
     
     /**
@@ -42,7 +58,7 @@ public class ReportPluginPublisher extends Recorder{
      * NONE = No external synchronization is performed on this build step.
      */
     public BuildStepMonitor getRequiredMonitorService() {
-	//TODO: check if STEP is really necessary
+	//TODO: check if STEP is really necessary, or if NONE suffices
 	return BuildStepMonitor.STEP;
     }
     
@@ -58,83 +74,85 @@ public class ReportPluginPublisher extends Recorder{
      * @throws InterruptedException
      * @throws IOException 
      */
-    @Override	    
-    public boolean perform(AbstractBuild<?,?> build, Launcher launcher,
-	BuildListener listener) throws InterruptedException, IOException{
-	
-	/* Only for matrix projects now
-	 * TODO: add also for other types of build (even though already implemented
-	 * in TestNG plugin and JUnit publish)
-	 */
-	if(!(build instanceof MatrixBuild)){
-	    return false;
-	}
-	
-	PrintStream logger = listener.getLogger();
-	logger.println("[Report Plugin] Report files processing: START");
-	
-	/*
-	 * MatrixTestResults will store mapping matrix run -> test results
-	 */
-	MatrixTestResults results = new MatrixTestResults("");
-	
-	/*
-	 * Iterate over all runs in matrix build 
-	 */
-	MatrixBuild mbuild = (MatrixBuild) build;
-	for(MatrixRun mrun: mbuild.getRuns()){
-	    logger.println("[Report Plugin] Starting to process Matrix Run.");
-	    logger.println("[Report Plugin] Looking for results reports in workspace"
-		+ " using pattern: " + reportLocationPattern);
-	    
-	    //TODO: locate results 
-	    FilePath[] paths = locateReports(build.getWorkspace(), reportLocationPattern);
-	    if (paths.length == 0) {
-		logger.println("Did not find any matching files.");
-		//build can still continue
-		return true;
-	    }
-	    
-	    /*
-	    * filter out the reports based on timestamps. See JENKINS-12187
-	    */
-	    //TODO: implement report filtering based on timestamps
-	    paths = checkReports(build, paths, logger);
-	    
-	    //TODO: implement saving reports 
-	    boolean filesSaved = saveReports(getReportDir(mrun), paths, logger);
-	    if (!filesSaved) {
-		logger.println("Failed to save TestNG XML reports");
-		return true;
-	    }
-	    
-	    try {
-		results.addMatrixTestResults(mrun, ReportPluginBuildAction.loadResults(mrun, logger));
-	    } catch (Throwable t) {
-		/*
-		* don't fail build if parser barfs, only 
-		* print out the exception to console.
-		*/
-		t.printStackTrace(logger);
-	    } 
-	    
-	    if (results.getFailedConfigCount() > 0 || results.getFailedTestCount() > 0) {
-		mrun.setResult(Result.UNSTABLE);
-	    } 
-	    
-	    if(results.getResults(mrun).getTestList().getSize <= 0){
-		logger.println("[Report Plugin] Found matching files but did not find any reports.");
-		return true;
-	    }
-	    logger.println("[Report Plugin] Finished processing Matrix Run.");
-	}
-	
-	ReportPluginBuildAction action = new ReportPluginBuildAction(build, results);
-	mbuild.getActions().add(action);
-	
-	logger.println("[Report Plugin] Report Processing: FINISH");
-	return true;
-    }
+    
+//    @Override	    
+//    public boolean perform(AbstractBuild<?,?> build, Launcher launcher,
+//	BuildListener listener) throws InterruptedException, IOException{
+//	
+//	/* Only for matrix projects now
+//	 * TODO: add also for other types of build (even though already implemented
+//	 * in TestNG plugin and JUnit publish)
+//	 */
+//	if(!(build instanceof MatrixBuild)){
+//	    return false;
+//	}
+//	
+//	PrintStream logger = listener.getLogger();
+//	logger.println("[Report Plugin] Report files processing: START");
+//	
+//	/*
+//	 * MatrixTestResults will store mapping matrix run -> test results
+//	 */
+//	MatrixTestResults results = new MatrixTestResults("");
+//	
+//	/*
+//	 * Iterate over all runs in matrix build 
+//	 */
+//	MatrixBuild mbuild = (MatrixBuild) build;
+//	for(MatrixRun mrun: mbuild.getRuns()){
+//	    logger.println("[Report Plugin] Starting to process Matrix Run.");
+//	    logger.println("[Report Plugin] Looking for results reports in workspace"
+//		+ " using pattern: " + reportLocationPattern);
+//	    
+//	    //TODO: locate results 
+//	    FilePath[] paths = locateReports(build.getWorkspace(), reportLocationPattern);
+//	    if (paths.length == 0) {
+//		logger.println("Did not find any matching files.");
+//		//build can still continue
+//		return true;
+//	    }
+//	    
+//	    /*
+//	    * filter out the reports based on timestamps. See JENKINS-12187
+//	    */
+//	    //TODO: implement report filtering based on timestamps
+//	    paths = checkReports(build, paths, logger);
+//	    
+//	    //TODO: implement saving reports 
+//	    boolean filesSaved = saveReports(getReportDir(mrun), paths, logger);
+//	    if (!filesSaved) {
+//		logger.println("Failed to save TestNG XML reports");
+//		return true;
+//	    }
+//	    
+//	    try {
+//		results.addMatrixTestResults(mrun, ReportPluginBuildAction.loadResults(mrun, logger));
+//	    } catch (Throwable t) {
+//		/*
+//		* don't fail build if parser barfs, only 
+//		* print out the exception to console.
+//		*/
+//		t.printStackTrace(logger);
+//	    } 
+//	    
+//	    if (results.getFailedConfigCount() > 0 || results.getFailedTestCount() > 0) {
+//		mrun.setResult(Result.UNSTABLE);
+//	    } 
+//	    
+//	    if(results.getResults(mrun).getTestList().getSize <= 0){
+//		logger.println("[Report Plugin] Found matching files but did not find any reports.");
+//		return true;
+//	    }
+//	    logger.println("[Report Plugin] Finished processing Matrix Run.");
+//	}
+//	
+//	ReportPluginBuildAction action = new ReportPluginBuildAction(mbuild, results);
+//	mbuild.getActions().add(action);
+//	
+//	logger.println("[Report Plugin] Report Processing: FINISH");
+//	return true;
+//    }
+
 
     private FilePath[] locateReports(FilePath workspace, String reportLocationPattern) {
 	throw new UnsupportedOperationException("Not yet implemented");
@@ -168,10 +186,7 @@ public class ReportPluginPublisher extends Recorder{
       
 	@Override
 	public boolean isApplicable(Class<? extends AbstractProject> project) {
-	    if(project instanceof MatrixProject){
-		return true;
-	    }
-	    return false;
+	    return true;
 	}
 
 	@Override
