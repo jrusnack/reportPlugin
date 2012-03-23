@@ -29,7 +29,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Jan Rusnacko (jrusnack at redhat.com)
  */
 public class ReportPluginPublisher extends Recorder{
-    private final String reportLocationPattern;
+    public final String reportLocationPattern;
 
     
    /**
@@ -65,6 +65,41 @@ public class ReportPluginPublisher extends Recorder{
 	return BuildStepMonitor.STEP;
     }
     
+    /**
+     * Create MatrixBuildTestResults and add them to build action if necessary
+     * (only first matrix run needs to initialize parent matrix build)
+     * 
+     * @param build
+     * @param listener
+     * @return 
+     */
+    @Override
+    public boolean prebuild(AbstractBuild<?,?> build, BuildListener listener){
+	/*
+	 * TODO: enhance for other types than multiconf projects
+	 */
+	if(build instanceof MatrixRun){
+	    MatrixRun mrun = (MatrixRun) build;
+	    /*
+	     * If not initialized, create MatrixBuildTestResults, add then to
+	     * ReportPluginBuildAction and add it to build actions
+	     */
+	    if(!(mrun.getParentBuild().getAction(ReportPluginBuildAction))) {
+		/*
+		 * MatrixBuildTestResults will store mapping matrix run -> test results
+		 */
+		MatrixBuildTestResults bResults = new MatrixBuildTestResults("");
+		ReportPluginBuildAction action = new 
+			ReportPluginBuildAction(mrun.getParentBuild(), bResults);
+		mrun.getParentBuild().getActions().add(action);
+		return true;
+	    }	    
+	}
+	/*
+	 * Publisher should be enabled only for multiconf. projects, so fail
+	 */
+	return false;
+    }
     
     /**
      * Locates, checks and saves reports after build finishes, initializes 
@@ -85,83 +120,74 @@ public class ReportPluginPublisher extends Recorder{
 	 * TODO: add also for other types of build (like free style projects, 
          * even though already implemented in TestNG plugin and JUnit publish)
 	 */
-	if(!(build instanceof MatrixBuild)){
+	if(!(build instanceof MatrixRun)){
 	    return false;
 	}
 	
+	MatrixRun mrun = (MatrixRun) build;
+	
 	PrintStream logger = listener.getLogger();
-	logger.println("[Report Plugin] Report files processing: START");
-	
-	/*
-	 * MatrixBuildTestResults will store mapping matrix run -> test results
-	 */
-	MatrixBuildTestResults bResults = new MatrixBuildTestResults("");
-	
-	/*
-	 * Iterate over all runs in matrix build 
-	 */
-	MatrixBuild mbuild = (MatrixBuild) build;
-	for(MatrixRun mrun: mbuild.getRuns()){
-	    logger.println("[Report Plugin] Starting to process Matrix Run.");
-	    logger.println("[Report Plugin] Looking for results reports in workspace"
+	logger.println("[Report Plugin] Report files processing: START");	
+	logger.println("[Report Plugin] Starting to process Matrix Run.");
+	logger.println("[Report Plugin] Looking for results reports in workspace"
 		+ " using pattern: " + reportLocationPattern);
 	    
 	    
-	    FilePath[] paths = locateReports(mrun.getWorkspace(), reportLocationPattern);
-	    if (paths.length == 0) {
-		logger.println("Did not find any matching files.");
-		//build can still continue
-		return true;
-	    }
-	    
-	    /*
-	    * filter out the reports based on timestamps. See JENKINS-12187
-	    */
-	    paths = checkReports(build, paths, logger);
-	    
-	    
-	    boolean filesSaved = saveReports(getReportDir(mrun), paths, logger);
-	    if (!filesSaved) {
-		logger.println("Failed to save TestNG XML reports");
-		return true;
-	    }
-	    
-	    MatrixRunTestResults rResults = new MatrixRunTestResults("");
-	    
-	    /*
-	     * Parse results
-	     */
-	    try {
-		rResults = ReportPluginRunAction.loadResults(mrun, logger);
-	    } catch (Throwable t) {
-		/*
-		* don't fail build if parser barfs, only 
-		* print out the exception to console.
-		*/
-		t.printStackTrace(logger);
-	    } 
-	    
-	    if (rResults.getTestList().size() > 0) {
-		//create an individual report for all of the results and add it to the build results
-		bResults.addMatrixTestResults(mrun, rResults);
-		if (rResults.getFailedConfigCount() > 0 || rResults.getFailedTestCount() > 0) {
-		    build.setResult(Result.UNSTABLE);
-		}
-	    } else {
-		logger.println("Found matching files but did not find any test results.");
-		return true;
-	    } 
-	    
-	    /*
-	     * Add matrix run rResults to parent build`s bResults
-	     */ 
-	    bResults.addMatrixTestResults(mrun, rResults);
-	    
-	    logger.println("[Report Plugin] Finished processing Matrix Run.");
+	FilePath[] paths = locateReports(mrun.getWorkspace(), reportLocationPattern);
+	if (paths.length == 0) {
+	    logger.println("Did not find any matching files.");
+	    //build can still continue
+	    return true;
 	}
+	    
+	/*
+	* filter out the reports based on timestamps. See JENKINS-12187
+	*/
+	paths = checkReports(build, paths, logger);
+
+
+	boolean filesSaved = saveReports(getReportDir(mrun), paths, logger);
+	if (!filesSaved) {
+	    logger.println("Failed to save TestNG XML reports");
+	    return true;
+	}
+
+	MatrixRunTestResults rResults = new MatrixRunTestResults("");
+
+	/*
+	 * Parse results
+	 */
+	try {
+	    rResults = ReportPluginRunAction.loadResults(mrun, logger);
+	} catch (Throwable t) {
+	    /*
+	    * don't fail build if parser barfs, only 
+	    * print out the exception to console.
+	    */
+	    t.printStackTrace(logger);
+	} 
+
+	if (rResults.getTestList().size() > 0) {
+	    
+	    /*
+	    * Add matrix run rResults to parent build`s bResults
+	    */ 
+	    action = mrun.getParentBuild().getAction(ReportPluginBuildAction);
+	    action.getBuildResults.addMatrixTestResults(mrun, rResults);
+	    if (rResults.getFailedConfigCount() > 0 || rResults.getFailedTestCount() > 0) {
+		build.setResult(Result.UNSTABLE);
+	    }
+	} else {
+	    logger.println("Found matching files but did not find any test results.");
+	    return true;
+	} 
+
+
+	logger.println("[Report Plugin] Finished processing Matrix Run.");
+	
 	
 	ReportPluginBuildAction action = new ReportPluginBuildAction(mbuild, bResults);
-	mbuild.getActions().add(action);
+	mrun.getActions().add(action);
 	
 	logger.println("[Report Plugin] Report Processing: FINISH");
 	return true;
@@ -261,10 +287,14 @@ public class ReportPluginPublisher extends Recorder{
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<hudson.tasks.Publisher> {
 
-      
+	
+	// TODO: enable for other types than multiconf projects
 	@Override
 	public boolean isApplicable(Class<? extends AbstractProject> project) {
-	    return true;
+	    if(project == MatrixProject.class){
+		return true;
+	    }	
+	    return false;
 	}
 
 	@Override

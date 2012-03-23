@@ -14,9 +14,18 @@ import java.io.Serializable;
  * @author Jan Rusnacko (jrusnack at redhat.com)
  */
 public class ReportPluginBuildAction implements Action, Serializable{
-
+    MatrixBuildTestResults results;
+    AbstractBuild<?, ?> build;
+    
     public ReportPluginBuildAction(AbstractBuild<?, ?> build, MatrixBuildTestResults results){
 	super();
+	this.results = results;
+	this.build = build;	
+    }
+    
+
+    public MatrixBuildTestResults getBuildResults(){
+	return results;
     }
     
     public String getIconFileName() {
