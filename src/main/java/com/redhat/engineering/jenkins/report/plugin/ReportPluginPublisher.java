@@ -6,6 +6,7 @@ import com.redhat.engineering.jenkins.report.plugin.results.MatrixRunTestResults
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.MatrixRun;
 import hudson.model.*;
@@ -68,9 +69,6 @@ public class ReportPluginPublisher extends Recorder{
      * Create MatrixBuildTestResults and add them to build action if necessary
      * (only first matrix run needs to initialize parent matrix build)
      * 
-     * @param build
-     * @param listener
-     * @return 
      */
     @Override
     public boolean prebuild(AbstractBuild<?,?> build, BuildListener listener){
@@ -83,8 +81,9 @@ public class ReportPluginPublisher extends Recorder{
 	     * If not initialized, create MatrixBuildTestResults, add then to
 	     * ReportPluginBuildAction and add it to build actions
 	     */
-	    // FIXME: doesn`t work
-	    if((mrun.getParentBuild().getActions(ReportPluginBuildAction.class)) == null) {
+	    MatrixBuild mbuild = mrun.getParentBuild();
+	    ReportPluginBuildAction ourAction = mbuild.getAction(ReportPluginBuildAction.class);
+	    if(ourAction == null) {
 		/*
 		 * MatrixBuildTestResults will store mapping matrix run -> test results
 		 */
