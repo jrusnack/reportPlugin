@@ -6,7 +6,6 @@ import com.redhat.engineering.jenkins.report.plugin.results.MatrixRunTestResults
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.MatrixRun;
 import hudson.model.*;
@@ -84,7 +83,8 @@ public class ReportPluginPublisher extends Recorder{
 	     * If not initialized, create MatrixBuildTestResults, add then to
 	     * ReportPluginBuildAction and add it to build actions
 	     */
-	    if(!(mrun.getParentBuild().getAction(ReportPluginBuildAction))) {
+	    // FIXME: doesn`t work
+	    if((mrun.getParentBuild().getActions(ReportPluginBuildAction.class)) == null) {
 		/*
 		 * MatrixBuildTestResults will store mapping matrix run -> test results
 		 */
@@ -92,8 +92,8 @@ public class ReportPluginPublisher extends Recorder{
 		ReportPluginBuildAction action = new 
 			ReportPluginBuildAction(mrun.getParentBuild(), bResults);
 		mrun.getParentBuild().getActions().add(action);
-		return true;
-	    }	    
+	    }
+	    return true;
 	}
 	/*
 	 * Publisher should be enabled only for multiconf. projects, so fail
@@ -172,24 +172,19 @@ public class ReportPluginPublisher extends Recorder{
 	    /*
 	    * Add matrix run rResults to parent build`s bResults
 	    */ 
-	    action = mrun.getParentBuild().getAction(ReportPluginBuildAction);
-	    action.getBuildResults.addMatrixTestResults(mrun, rResults);
+	    ReportPluginBuildAction action = mrun.getParentBuild().getAction(ReportPluginBuildAction.class);
+	    action.getBuildResults().addMatrixTestResults(mrun, rResults);
 	    if (rResults.getFailedConfigCount() > 0 || rResults.getFailedTestCount() > 0) {
-		build.setResult(Result.UNSTABLE);
+		mrun.setResult(Result.UNSTABLE);
 	    }
 	} else {
 	    logger.println("Found matching files but did not find any test results.");
 	    return true;
 	} 
 
-
-	logger.println("[Report Plugin] Finished processing Matrix Run.");
-	
-	
-	ReportPluginBuildAction action = new ReportPluginBuildAction(mbuild, bResults);
-	mrun.getActions().add(action);
-	
+	logger.println("[Report Plugin] Finished processing Matrix Run.");	
 	logger.println("[Report Plugin] Report Processing: FINISH");
+	
 	return true;
     }
 
