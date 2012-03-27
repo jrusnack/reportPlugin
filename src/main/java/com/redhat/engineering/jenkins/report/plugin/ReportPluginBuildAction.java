@@ -16,6 +16,9 @@ import java.io.Serializable;
 public class ReportPluginBuildAction implements Action, Serializable{
     MatrixBuildTestResults results;
     AbstractBuild<?, ?> build;
+    private Number passedTestCount;
+    private Number failedTestCount;
+    private Number skippedTestCount;
     
     public ReportPluginBuildAction(AbstractBuild<?, ?> build, MatrixBuildTestResults results){
 	super();
@@ -38,6 +41,18 @@ public class ReportPluginBuildAction implements Action, Serializable{
 
     public String getUrlName() {
 	return Definitions.__URL_NAME;
+    }
+
+    Number getPassedTestCount() {
+	return this.passedTestCount;
+    }
+
+    Number getFailedTestCount() {
+	return this.failedTestCount;
+    }
+
+    Number getSkippedTestCount() {
+	return this.skippedTestCount;
     }
     
 }

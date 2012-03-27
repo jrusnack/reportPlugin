@@ -85,10 +85,11 @@ public class ClassResult extends BaseResult{
 		}
 	    }
 	    methodResult.setParent(this);
+	    
 	    /*
-	    * Setup testUuids to ensure that methods with same names can be
-	    * reached using unique urls
-	    */
+	     * Setup testUuids to ensure that methods with same names can be
+	     * reached using unique urls
+	     */
 	    String methodName = methodResult.getName();
 	    if (methodInstanceMap.containsKey(methodName)) {
 		int currIdx = methodInstanceMap.get(methodName);

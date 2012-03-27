@@ -13,6 +13,7 @@ import hudson.model.*;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Recorder;
+import hudson.util.FormValidation;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -22,6 +23,7 @@ import java.util.Collection;
 import java.util.List;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -70,6 +72,7 @@ public class ReportPluginPublisher extends Recorder{
      * (only first matrix run needs to initialize parent matrix build)
      * 
      */
+    //FIXME: Write JUnit test
     @Override
     public boolean prebuild(AbstractBuild<?,?> build, BuildListener listener){
 	/*
@@ -78,7 +81,7 @@ public class ReportPluginPublisher extends Recorder{
 	if(build instanceof MatrixRun){
 	    MatrixRun mrun = (MatrixRun) build;
 	    /*
-	     * If not initialized, create MatrixBuildTestResults, add then to
+	     * If not initialized, create MatrixBuildTestResults, add them to
 	     * ReportPluginBuildAction and add it to build actions
 	     */
 	    MatrixBuild mbuild = mrun.getParentBuild();
@@ -173,9 +176,11 @@ public class ReportPluginPublisher extends Recorder{
 	    */ 
 	    ReportPluginBuildAction action = mrun.getParentBuild().getAction(ReportPluginBuildAction.class);
 	    action.getBuildResults().addMatrixTestResults(mrun, rResults);
-	    if (rResults.getFailedConfigCount() > 0 || rResults.getFailedTestCount() > 0) {
+	    
+	    if (rResults.getFailedTestCount() > 0) {
 		mrun.setResult(Result.UNSTABLE);
 	    }
+	    
 	} else {
 	    logger.println("Found matching files but did not find any test results.");
 	    return true;
@@ -188,6 +193,9 @@ public class ReportPluginPublisher extends Recorder{
     }
 
 
+    /**
+     * Locate test reports under workspace/reportLocationPattern
+     */
     public static FilePath[] locateReports(FilePath workspace, String reportLocationPattern)
     throws IOException, InterruptedException{
 	// First use ant-style pattern
@@ -260,6 +268,16 @@ public class ReportPluginPublisher extends Recorder{
 	return new FilePath(new File(build.getRootDir(), "report-plugin"));
     }
 
+    /**
+     * Save reports to build directory (job is build in workspace, however, next 
+     * build would overwrite files, so we need to save copy of results in persistent
+     * directory)
+     * 
+     * @param reportDir	    Directory where to save reports to
+     * @param paths	    Paths to report files
+     * @param logger
+     * @return		    True for success
+     */
     public static boolean saveReports(FilePath reportDir, FilePath[] paths, PrintStream logger) {
 	logger.println("Saving reports...");
 	try {
@@ -281,8 +299,18 @@ public class ReportPluginPublisher extends Recorder{
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<hudson.tasks.Publisher> {
 
+	/**
+	 * Perform validation of 'reportLocationPattern' field
+	 * 
+	 * @param val	    location to be checked
+	 * @return 
+	 */
+	//TODO: implement
+	public FormValidation doCheckReportLocationPattern(@QueryParameter String val){
+	    return FormValidation.ok();
+	}
 	
-	// TODO: enable for other types than multiconf projects
+	// TODO: [freestyle] implement
 	@Override
 	public boolean isApplicable(Class<? extends AbstractProject> project) {
 	    if(project == MatrixProject.class){

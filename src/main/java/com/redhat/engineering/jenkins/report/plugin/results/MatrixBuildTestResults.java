@@ -29,11 +29,17 @@ public class MatrixBuildTestResults extends BaseResult {
      */
     public boolean addMatrixTestResults(MatrixRun mrun, MatrixRunTestResults results){
 	
+	// FIXME: update getFailedConfigCount and stability of build/owner
 	if(this.results.get(mrun) == null){
 	    this.results.put(mrun.getDisplayName(), results);
 	    return true;
 	}
 	return false;
     }
+
+    public int getFailedConfigCount() {
+	throw new UnsupportedOperationException("Not yet implemented");
+    }
+
     
 }

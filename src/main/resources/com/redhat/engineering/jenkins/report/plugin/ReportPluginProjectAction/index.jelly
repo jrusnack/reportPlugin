@@ -3,8 +3,15 @@
    <l:layout title="Report Plugin Results Trend">
       <st:include it="${it.project}" page="sidepanel.jelly"/>
       <l:main-panel>
-         <h1>TestNG Results Trend</h1>
-         
+         <h1>Report Plugin Results Trend</h1>
+         <j:choose>
+            <j:when test="${it.graphActive}">
+               <img src="graph" lazymap="graphMap?rel=${it.project.lastCompletedBuild.upUrl}"
+                    alt="[Test result trend chart]"/>
+            </j:when>
+            <j:otherwise>Need at least 2 builds with results to show trend graph
+            </j:otherwise>
+         </j:choose>
 
       </l:main-panel>
    </l:layout>

@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package com.redhat.engineering.jenkins.report.plugin.results;
 
 import hudson.model.AbstractBuild;
@@ -12,13 +9,13 @@ import org.kohsuke.stapler.export.Exported;
  * TODO: Fix whole class (it is analogue to TestResults in TestNG plugin)
  * 
  * @author Jan Rusnacko (jrusnack at redhat.com)
+ * @author nullin
+ * @author farshidce
  */
-public class MatrixRunTestResults extends BaseResult {
+public class MatrixRunTestResults extends BaseResult implements TestResults{
     private List<MethodResult> passedTests = new ArrayList<MethodResult>();
     private List<MethodResult> failedTests = new ArrayList<MethodResult>();
     private List<MethodResult> skippedTests = new ArrayList<MethodResult>();
-    private List<MethodResult> failedConfigurationMethods = new ArrayList<MethodResult>();
-    private List<MethodResult> skippedConfigurationMethods = new ArrayList<MethodResult>();
     private int totalTestCount;
     private List<TestResult> testList = new ArrayList<TestResult>();
     private long duration;
@@ -46,14 +43,6 @@ public class MatrixRunTestResults extends BaseResult {
 	return skippedTests;
     }
 
-    public List<MethodResult> getFailedConfigs() {
-	return failedConfigurationMethods;
-    }
-
-    public List<MethodResult> getSkippedConfigs() {
-	return skippedConfigurationMethods;
-    }
-
     public List<TestResult> getTestList() {
 	return testList;
     }
@@ -66,7 +55,7 @@ public class MatrixRunTestResults extends BaseResult {
     @Exported
     public long getDuration() {
 	return duration;
-	}
+    }
 
     public int getPassedTestCount() {
 	return passedTestCount;
@@ -82,15 +71,6 @@ public class MatrixRunTestResults extends BaseResult {
 	return skippedTestCount;
     }
 
-    @Exported(name = "fail-config")
-    public int getFailedConfigCount() {
-	return failedConfigurationMethodsCount;
-    }
-
-    @Exported(name = "skip-config")
-    public int getSkippedConfigCount() {
-	return skippedConfigurationMethodsCount;
-    }
 
     @Exported(name = "package")
     public Collection<PackageResult> getPackageList() {
@@ -115,6 +95,7 @@ public class MatrixRunTestResults extends BaseResult {
 	this.testList = new ArrayList<TestResult>(tmpSet);
     }
 
+    @Override
     public void setOwner(AbstractBuild<?, ?> owner) {
 	this.owner = owner;
 	for (TestResult _test : testList) {
@@ -122,6 +103,54 @@ public class MatrixRunTestResults extends BaseResult {
 	}
 	for (PackageResult pkg : packageMap.values()) {
 	    pkg.setOwner(owner);
+	}
+    }
+    
+    @Override
+    public String toString() {
+      return String.format("TestResults {name='%s', totalTests=%d, " +
+          "failedTests=%d, skippedTests=%d, failedConfigs=%d, " +
+          "skippedConfigs=%d}", name, totalTestCount, failedTestCount,
+          skippedTestCount, failedConfigurationMethodsCount,
+          skippedConfigurationMethodsCount);
+   }
+    
+	/**
+	 * Updates the calculated fields
+	 */
+	public void tally() {
+	failedTestCount = failedTests.size();
+	passedTestCount = passedTests.size();
+	skippedTestCount = skippedTests.size();
+	totalTestCount = passedTestCount + failedTestCount + skippedTestCount;
+
+	packageMap.clear();
+	for (TestResult _test : testList) {
+	    for (ClassResult _class : _test.getClassList()) {
+		String pkg = _class.getName();
+		int lastDot = pkg.lastIndexOf('.');
+		if (lastDot == -1) {
+		pkg = "No Package";
+		} else {
+		pkg = pkg.substring(0, lastDot);
+		}
+		if (packageMap.containsKey(pkg)) {
+		List<ClassResult> classResults = packageMap.get(pkg).getClassList();
+		if (!classResults.contains(_class)) {
+		    classResults.add(_class);
+		}
+		} else {
+		PackageResult tpkg = new PackageResult(pkg);
+		tpkg.getClassList().add(_class);
+		tpkg.setParent(this);
+		packageMap.put(pkg, tpkg);
+		}
+	    }
+	}
+	duration = 0;
+	for (PackageResult pkgResult : packageMap.values()) {
+	    pkgResult.tally();
+	    duration += pkgResult.getDuration();
 	}
     }
 }
