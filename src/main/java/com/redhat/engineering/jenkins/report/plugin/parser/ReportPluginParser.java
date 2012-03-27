@@ -314,6 +314,7 @@ public class ReportPluginParser {
                     + "Didn't find stacktraces for the exception.");
          return;
       }
+      //FIXME: research Exception in TestNG xml and implement MethodResultException class
       MethodResultException mrEx = new MethodResultException(currentMessage,
                currentShortStackTrace, currentFullStackTrace);
       currentMethod.setException(mrEx);

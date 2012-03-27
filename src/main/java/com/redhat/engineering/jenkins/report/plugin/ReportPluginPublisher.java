@@ -72,11 +72,11 @@ public class ReportPluginPublisher extends Recorder{
      * (only first matrix run needs to initialize parent matrix build)
      * 
      */
-    //FIXME: Write JUnit test
+    //TODO: Write JUnit test
     @Override
     public boolean prebuild(AbstractBuild<?,?> build, BuildListener listener){
 	/*
-	 * TODO: enhance for other types than multiconf projects
+	 * TODO: [freestyle] implement
 	 */
 	if(build instanceof MatrixRun){
 	    MatrixRun mrun = (MatrixRun) build;
@@ -119,8 +119,7 @@ public class ReportPluginPublisher extends Recorder{
 	BuildListener listener) throws InterruptedException, IOException{
 	
 	/* Only for matrix projects now
-	 * TODO: add also for other types of build (like free style projects, 
-         * even though already implemented in TestNG plugin and JUnit publish)
+	 * TODO: [freestyle] implement
 	 */
 	if(!(build instanceof MatrixRun)){
 	    return false;
@@ -160,7 +159,7 @@ public class ReportPluginPublisher extends Recorder{
 	 * Parse results
 	 */
 	try {
-	    rResults = ReportPluginRunAction.loadResults(mrun, logger);
+	    rResults = ReportPluginBuildAction.loadResults(mrun, logger);
 	} catch (Throwable t) {
 	    /*
 	    * don't fail build if parser barfs, only 
@@ -305,7 +304,7 @@ public class ReportPluginPublisher extends Recorder{
 	 * @param val	    location to be checked
 	 * @return 
 	 */
-	//TODO: implement
+	//TODO: implement report checking
 	public FormValidation doCheckReportLocationPattern(@QueryParameter String val){
 	    return FormValidation.ok();
 	}

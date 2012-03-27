@@ -12,8 +12,12 @@ import java.util.List;
  */
 public interface TestResults {
 
+    
     public void addUniqueTests(List<TestResult> testList);
 
+    /**
+     * Updates calculated fields
+     */
     public void tally();
 
     public List<MethodResult> getFailedTests();

@@ -5,8 +5,11 @@
 package com.redhat.engineering.jenkins.report.plugin;
 
 import com.redhat.engineering.jenkins.report.plugin.results.MatrixBuildTestResults;
+import com.redhat.engineering.jenkins.report.plugin.results.MatrixRunTestResults;
+import hudson.matrix.MatrixRun;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
+import java.io.PrintStream;
 import java.io.Serializable;
 
 /**
@@ -53,6 +56,11 @@ public class ReportPluginBuildAction implements Action, Serializable{
 
     Number getSkippedTestCount() {
 	return this.skippedTestCount;
+    }
+    
+    //FIXME: implement
+    static MatrixRunTestResults loadResults(MatrixRun mrun, PrintStream logger) {
+	throw new UnsupportedOperationException("Not yet implemented");
     }
     
 }

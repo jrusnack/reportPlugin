@@ -28,8 +28,7 @@ public abstract class BaseResult implements ModelObject, Serializable{
     public String getName(){
 	return name;
     }
-    
-	
+   
     public BaseResult getParent() {
 	return parent;
     }

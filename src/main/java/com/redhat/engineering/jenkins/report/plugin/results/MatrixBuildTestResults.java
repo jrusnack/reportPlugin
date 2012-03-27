@@ -2,6 +2,7 @@
 package com.redhat.engineering.jenkins.report.plugin.results;
 
 import hudson.matrix.MatrixRun;
+import hudson.model.Result;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,9 +30,15 @@ public class MatrixBuildTestResults extends BaseResult {
      */
     public boolean addMatrixTestResults(MatrixRun mrun, MatrixRunTestResults results){
 	
-	// FIXME: update getFailedConfigCount and stability of build/owner
+	// test if already added
 	if(this.results.get(mrun) == null){
 	    this.results.put(mrun.getDisplayName(), results);
+	    // FIXME: update getFailedConfigCount and stability of build/owner
+	    if (results.getFailedTestCount() > 0){
+		owner.setResult(Result.UNSTABLE);
+	    } else {
+		owner.setResult(Result.SUCCESS);
+	    }
 	    return true;
 	}
 	return false;

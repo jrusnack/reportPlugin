@@ -28,6 +28,8 @@ public class MethodResult extends BaseResult {
     * related configuration methods)
     */
     private final String testRunId;
+   private List<String> groups;
+    private List<String> parameters;
     
     public MethodResult(String name,
             String status,
@@ -112,5 +114,22 @@ public class MethodResult extends BaseResult {
     public void setTestUuid(String testUuid) {
 	this.testUuid = testUuid;
     }
+    
+    @Exported
+    public List<String> getGroups() {
+	return groups;
+    }
 
+    @Exported
+    public List<String> getParameters() {
+	return parameters;
+    }
+    
+    public void setGroups(List<String> groups) {
+	this.groups = groups;
+    }
+
+    public void setParameters(List<String> parameters) {
+	this.parameters = parameters;
+    }
 }
