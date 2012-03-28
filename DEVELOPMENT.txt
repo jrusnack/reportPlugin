@@ -1,0 +1,76 @@
+Author: Jan Rusnacko (jrusnack at redhat.com)
+
+===============================================================================
+								DEVELOPMENT COMMENTS
+===============================================================================
+
+
+1. FEATURES
+----------------------
+a) compatible with JUnit
+b) compatible with TestNG
+c) available for freestyle projects
+d) available for multiconfiguration (matrix) projects
+e) for matrix projects, allow filtering of results based on filtered conmfiguration
+f) display results
+g) implements Dashboard View plugin`s portlet interface, so our results can be 
+	viewed from	dashboard
+
+
+
+2. STRUCTURE
+------------------------
+
+For parsing TestNG xmls we will use/modify parser from TestNG plugin. To parse 
+JUnit, we will use Jenkins`s internal JUnit parser 
+(jenkins/core/src/main/java/hudson/tasks/junit/JUnitParser.java ). This alone 
+creates a problem: JUnitParser outputs TestResult, which is final class that we 
+are unable to modify. Therefore, we will create one parser, that will parse any 
+(JUnit or TestNG) results xml and internally will use either of the two parsers.
+Output will be our new class TestResults.
+
+Second issue is adding support for multiconfiguration projects. 
+
+
+
+
+	----------------------------------------------------- 
+	|			abstract class TestResults				|
+	|													|
+	|	getFailedTestCount								|
+	|	getPassedTestCount								|
+	|	isMulticonfiguration							|
+	|													|
+	|													|
+	-----------------------------------------------------
+				|						|					
+				|						|
+		---------						---------
+		|										|
+		|										|
+	---------------------		-----------------------------
+	|  FreestyleTestRes	|		|	MatrixBuildTestResults	|
+	|					|		|							|
+	---------------------		-----------------------------
+										|		|
+						-----------------		---------
+						|								|
+				---------------------		-------------------------
+				| MatrixRunTestRes	|		|	MatrixRunTestRes	|
+				---------------------		-------------------------
+
+
+
+3. POSSIBLE EXTENSIONS
+----------------------
+
+Since we develop also tcmsPlugin, we decided that these two will use the same 
+parser, developed as a part of this plugin. This also creates one issue: if both
+are enabled for project, for each build parser will be called twice. So we might
+want to research possiblitity of adding our TestResults to the build directly, 
+and both plugins would first search, if these results are present, and only after 
+that parse XMLs. This way only one of those will actually call parser. Note that 
+we cannot make use of Jenkins`s internal parser, because it outputs Jenkins`s 
+TestResults.
+
+
