@@ -1,8 +1,7 @@
 
 package com.redhat.engineering.jenkins.report.plugin.results;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  *
@@ -16,6 +15,8 @@ public abstract class TestResults extends BaseResult implements RunTestResults{
     private int failedTestCount;
     private int skippedTestCount;
     private int totalTestCount;
+    
+   private Map<String, PackageResult> packageMap = new HashMap<String, PackageResult>();
     
     // stores list of all tests performed 
     private List<TestResult> testList = new ArrayList<TestResult>();
@@ -39,7 +40,7 @@ public abstract class TestResults extends BaseResult implements RunTestResults{
 	return failedTests;
     }
 
-    public List<MethodResult> getSkippedTests(){Object
+    public List<MethodResult> getSkippedTests(){
 	return skippedTests;
     }
 
@@ -91,5 +92,13 @@ public abstract class TestResults extends BaseResult implements RunTestResults{
 	return String.format("TestResults {name='%s', totalTests=%d, " +
           "failedTests=%d, skippedTests=%d}", name, totalTestCount, failedTestCount,
           skippedTestCount);
+    }
+
+    public Set<String>  getPackageNames() {
+	return packageMap.keySet();
+    }
+
+    public Map<String, PackageResult> getPackageMap() {
+	return packageMap;
     }
 }
