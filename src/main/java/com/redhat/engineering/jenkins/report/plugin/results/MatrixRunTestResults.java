@@ -12,7 +12,7 @@ import org.kohsuke.stapler.export.Exported;
  * @author nullin
  * @author farshidce
  */
-public class MatrixRunTestResults extends BaseResult {
+public class MatrixRunTestResults extends BaseResult implements RunTestResults{
     private List<MethodResult> passedTests = new ArrayList<MethodResult>();
     private List<MethodResult> failedTests = new ArrayList<MethodResult>();
     private List<MethodResult> skippedTests = new ArrayList<MethodResult>();
@@ -75,13 +75,6 @@ public class MatrixRunTestResults extends BaseResult {
 	return packageMap.values();
     }
 
-    public Map<String, PackageResult> getPackageMap() {
-	return packageMap;
-    }
-
-    public Set<String> getPackageNames() {
-	return packageMap.keySet();
-    }
 
     /**
     * Adds only the <test>s that already aren't part of the list
@@ -109,7 +102,7 @@ public class MatrixRunTestResults extends BaseResult {
       return String.format("TestResults {name='%s', totalTests=%d, " +
           "failedTests=%d, skippedTests=%d}", name, totalTestCount, failedTestCount,
           skippedTestCount);
-   }
+    }
     
 	/**
 	 * Updates the calculated fields

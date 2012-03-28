@@ -17,8 +17,52 @@ g) implements Dashboard View plugin`s portlet interface, so our results can be
 	viewed from	dashboard
 
 
+2. NAMING CONVENTION
+--------------------
 
-2. STRUCTURE
+Project type is either matrix or freestyle:
+
+		Project = {matrix/multiconf, freestyle} 
+
+Matrix/multiconf. project has several configurations:
+
+		Project
+			* Configuration #1 (X= ..., Y= ...)
+			* Configuration #2 (X= ..., Y= ...)
+
+One Jenkins Project has several builds. 
+
+		Project
+			* Build #1
+			* Build #2
+			* ...
+
+If Project is matrix, then it`s builds have several matrix runs, and each run 
+corresponds to a configuration:
+		
+		Project
+			* Build #1
+				* Run (X= ..., Y= ...)
+				* Run (X= ..., Y= ...)
+			* Build #2
+				* Run (X= ..., Y= ...)
+				* Run (X= ..., Y= ...)
+
+ATTENTION: If Project is freestyle, we say it has exactly one run (even though 
+it does not really) and this run is equal to the build. This is artificially 
+defined as such to allow concurrently developed tcmsPlugin use our parser (
+mapping Jenkins`s projects, builds and runs will become consistent)
+
+		Project
+			* Build #1
+				* Run == Build #1
+			* Build #2
+				* Run == Build #2
+
+
+If Project is matrix project, each build 
+
+3. STRUCTURE
 ------------------------
 
 a) Parser and classes representing results
@@ -40,7 +84,7 @@ that pass filter). This will provide easy handling when creating reports/graphs.
 
 Third issue is use of our parser in tcmsPlugin (developed concurrently). To be 
 more usable, we need to structure our results in such a way that they follow 
-tcms workflow more closely. This is the reason why we add interface TestRunResults.
+tcms workflow more closely. This is the reason why we add interface RunTestResults.
 Also, to allow effortless upload, we offer two ways of getting results from
 TestResults for freestyle projects: they can be obtained directly 
 (TestResults.getFailedCount ...) or indirectly 
@@ -86,7 +130,7 @@ why we must implement direct method is explained in former paragraph (filtering)
 
 
 			-------------------------
-			| interface TestRunRes 	|
+			| interface RunTestRes 	|
 			-------------------------
 				|			|
 		---------			-------------
@@ -96,7 +140,23 @@ why we must implement direct method is explained in former paragraph (filtering)
 	-------------------------	-------------------------
 
 
-3. POSSIBLE EXTENSIONS
+
+4. DIRECTION
+------------
+
+Right now focus only on developing TestNG part of thigs.
+
+In second iteration, add JUnit support, which might break some classes and methods
+(MatrixRunTestResults.getTestList ??)
+
+
+5. POSSIBLE BUGS, GOTCHAS ...
+------------------------------
+
+a) How to handle change of axes in multiconfiguration project - maybe we don`t 
+even have to hanlde anything, maybe it will broke everything. 
+
+6. POSSIBLE EXTENSIONS
 ----------------------
 
 a) Reduction of parser runs

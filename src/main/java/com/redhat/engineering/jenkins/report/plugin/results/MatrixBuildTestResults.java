@@ -15,9 +15,13 @@ import java.util.Map;
  */
 public class MatrixBuildTestResults extends TestResults {
     private Map<String, MatrixRunTestResults> results = new HashMap<String, MatrixRunTestResults>();
+    private int failedConfigCount;
+    private int skippedConfigCount;
 
     public MatrixBuildTestResults(String name) {
 	super(name);
+	failedConfigCount = 0;
+	skippedConfigCount = 0;
     }
     
     /**
@@ -45,7 +49,16 @@ public class MatrixBuildTestResults extends TestResults {
     }
 
     public int getFailedConfigCount() {
-	throw new UnsupportedOperationException("Not yet implemented");
+	return failedConfigCount;
+    }
+    
+    public int getSkippedConfigCount(){
+	return skippedConfigCount;
+    }
+
+    @Override
+    public boolean isMatrixBuildTestResult() {
+	return true;
     }
 
     

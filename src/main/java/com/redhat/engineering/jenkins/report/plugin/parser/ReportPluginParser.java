@@ -45,7 +45,7 @@ public class ReportPluginParser {
     */
    private Map<String, ClassResult> classResultMap = new HashMap<String, ClassResult>();
    private Map<String, List<String>> methodGroupMap = new HashMap<String, List<String>>();
-   private TestResults finalResults;
+   private RunTestResults finalResults;
    private List<TestResult> testList;
    private List<ClassResult> currentClassList;
    private List<MethodResult> currentMethodList;
@@ -102,10 +102,13 @@ public class ReportPluginParser {
    /**
     * Parses the XML for relevant information
     *
-    * @param paths a file hopefully containing test related data in correct format
-    * @return a collection of test results
+    * @param paths	a file hopefully containing test related data in correct format
+    * @param isMulticonf true if we are part of MatrixProject   
+    * @return		results packed in MatrixRunTestResults if isMulticonf, 
+    *			packed in FreeStyleTestResults otherwise
+    *			
     */
-   public TestResults parse(FilePath[] paths, boolean isMulticonf) {
+   public RunTestResults parse(FilePath[] paths, boolean isMulticonf) {
       if (null == paths) {
          log("File paths not specified. paths var is null. Returning empty test results.");
          if (isMulticonf){
