@@ -12,7 +12,7 @@ import org.kohsuke.stapler.export.Exported;
  * @author nullin
  * @author farshidce
  */
-public class MatrixRunTestResults extends BaseResult implements TestResults{
+public class MatrixRunTestResults extends BaseResult {
     private List<MethodResult> passedTests = new ArrayList<MethodResult>();
     private List<MethodResult> failedTests = new ArrayList<MethodResult>();
     private List<MethodResult> skippedTests = new ArrayList<MethodResult>();
@@ -22,8 +22,6 @@ public class MatrixRunTestResults extends BaseResult implements TestResults{
     private int passedTestCount;
     private int failedTestCount;
     private int skippedTestCount;
-    private int failedConfigurationMethodsCount;
-    private int skippedConfigurationMethodsCount;
     private Map<String, PackageResult> packageMap = new HashMap<String, PackageResult>();
     private AbstractBuild<?, ?> owner;
     
@@ -109,10 +107,8 @@ public class MatrixRunTestResults extends BaseResult implements TestResults{
     @Override
     public String toString() {
       return String.format("TestResults {name='%s', totalTests=%d, " +
-          "failedTests=%d, skippedTests=%d, failedConfigs=%d, " +
-          "skippedConfigs=%d}", name, totalTestCount, failedTestCount,
-          skippedTestCount, failedConfigurationMethodsCount,
-          skippedConfigurationMethodsCount);
+          "failedTests=%d, skippedTests=%d}", name, totalTestCount, failedTestCount,
+          skippedTestCount);
    }
     
 	/**

@@ -174,7 +174,7 @@ public class ReportPluginPublisher extends Recorder{
 	    * Add matrix run rResults to parent build`s bResults
 	    */ 
 	    ReportPluginBuildAction action = mrun.getParentBuild().getAction(ReportPluginBuildAction.class);
-	    action.getBuildResults().addMatrixTestResults(mrun, rResults);
+	    action.getBuildResults().addMatrixRunTestResults(mrun, rResults);
 	    
 	    if (rResults.getFailedTestCount() > 0) {
 		mrun.setResult(Result.UNSTABLE);

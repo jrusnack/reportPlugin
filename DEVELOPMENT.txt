@@ -21,6 +21,8 @@ g) implements Dashboard View plugin`s portlet interface, so our results can be
 2. STRUCTURE
 ------------------------
 
+a) Parser and classes representing results
+
 For parsing TestNG xmls we will use/modify parser from TestNG plugin. To parse 
 JUnit, we will use Jenkins`s internal JUnit parser 
 (jenkins/core/src/main/java/hudson/tasks/junit/JUnitParser.java ). This alone 
@@ -29,18 +31,45 @@ are unable to modify. Therefore, we will create one parser, that will parse any
 (JUnit or TestNG) results xml and internally will use either of the two parsers.
 Output will be our new class TestResults.
 
-Second issue is adding support for multiconfiguration projects. 
+Second issue is adding support for multiconfiguration projects. We will require 
+filtering of test results (ad. 1e), so we want to implement another class 
+Filter, that will represent which configurations to include and which don`t. 
+Filter will be added to TestResults and after that getters will include only 
+filtered output (ie. getFailedTestCount will sum failed tests only from configs 
+that pass filter). This will provide easy handling when creating reports/graphs.
+
+Third issue is use of our parser in tcmsPlugin (developed concurrently). To be 
+more usable, we need to structure our results in such a way that they follow 
+tcms workflow more closely. This is the reason why we add interface TestRunResults.
+Also, to allow effortless upload, we offer two ways of getting results from
+TestResults for freestyle projects: they can be obtained directly 
+(TestResults.getFailedCount ...) or indirectly 
+(TestResults.getTestRunResults.get(0).getFailedCount). Reason why we implement 
+also indirect method is that this way tcmsPlugin can simply iterate over all runs
+under TestResults and upload their results ignoring type of project (matrix of free).
+This also allows easier mapping of structures between Jenkins and nitrate. Reason
+why we must implement direct method is explained in former paragraph (filtering).
 
 
+
+						-------------------------
+						| 	abstract BaseResult	|
+						-------------------------
+								|		|
+				-----------------		---------
+				|								|
+		---------------------		-----------------------------
+		| MatrixRunTestRes	|		|	abstract TestResults	|
+		---------------------		-----------------------------
 
 
 	----------------------------------------------------- 
 	|			abstract class TestResults				|
 	|													|
-	|	getFailedTestCount								|
-	|	getPassedTestCount								|
-	|	isMulticonfiguration							|
-	|													|
+	|	- getFailedTestCount							|
+	|	- getPassedTestCount							|
+	|	- isMulticonfiguration							|
+	|	- getTestRunRes									|
 	|													|
 	-----------------------------------------------------
 				|						|					
@@ -51,18 +80,26 @@ Second issue is adding support for multiconfiguration projects.
 	---------------------		-----------------------------
 	|  FreestyleTestRes	|		|	MatrixBuildTestResults	|
 	|					|		|							|
-	---------------------		-----------------------------
-										|		|
-						-----------------		---------
-						|								|
-				---------------------		-------------------------
-				| MatrixRunTestRes	|		|	MatrixRunTestRes	|
-				---------------------		-------------------------
+	---------------------		| - getMatrixRunTestResults	|
+								-----------------------------
 
+
+
+			-------------------------
+			| interface TestRunRes 	|
+			-------------------------
+				|			|
+		---------			-------------
+		|								|
+	-------------------------	-------------------------
+	|	MatrixRunTestRes	|	|	FreeStyleTestRes	|
+	-------------------------	-------------------------
 
 
 3. POSSIBLE EXTENSIONS
 ----------------------
+
+a) Reduction of parser runs
 
 Since we develop also tcmsPlugin, we decided that these two will use the same 
 parser, developed as a part of this plugin. This also creates one issue: if both

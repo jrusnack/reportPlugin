@@ -13,7 +13,7 @@ import java.util.Map;
  * 
  * @author Jan Rusnacko (jrusnack at redhat.com)
  */
-public class MatrixBuildTestResults extends BaseResult {
+public class MatrixBuildTestResults extends TestResults {
     private Map<String, MatrixRunTestResults> results = new HashMap<String, MatrixRunTestResults>();
 
     public MatrixBuildTestResults(String name) {
@@ -28,7 +28,7 @@ public class MatrixBuildTestResults extends BaseResult {
      * @param results	
      * @return		false if this run is already mapped to results
      */
-    public boolean addMatrixTestResults(MatrixRun mrun, MatrixRunTestResults results){
+    public boolean addMatrixRunTestResults(MatrixRun mrun, MatrixRunTestResults results){
 	
 	// test if already added
 	if(this.results.get(mrun) == null){
