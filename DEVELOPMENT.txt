@@ -110,7 +110,7 @@ why we must implement direct method is explained in former paragraph (filtering)
 	----------------------------------------------------- 
 	|			abstract class TestResults				|
 	|													|
-	|	- getFailedTestCount							|
+	|	- getFailedTestCount		        			|
 	|	- getPassedTestCount							|
 	|	- isMulticonfiguration							|
 	|	- getTestRunRes									|

@@ -3,6 +3,9 @@ package com.redhat.engineering.jenkins.report.plugin;
 
 /**
 *
+* TODO: check serializable and other interfaces that might be implemented by our classes
+* TODO: check private/public permissions of methods 
+* 
 * @author Jan Rusnacko (jrusnack at redhat.com)
 */
 public class Definitions {

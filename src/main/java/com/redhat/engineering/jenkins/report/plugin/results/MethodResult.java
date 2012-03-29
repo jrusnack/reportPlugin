@@ -28,8 +28,9 @@ public class MethodResult extends BaseResult {
     * related configuration methods)
     */
     private final String testRunId;
-   private List<String> groups;
+    private List<String> groups;
     private List<String> parameters;
+    private MethodResultException exception;
     
     public MethodResult(String name,
             String status,
@@ -132,4 +133,9 @@ public class MethodResult extends BaseResult {
     public void setParameters(List<String> parameters) {
 	this.parameters = parameters;
     }
+    
+    public void setException(MethodResultException exception) {
+	this.exception = exception;
+    }
+    
 }

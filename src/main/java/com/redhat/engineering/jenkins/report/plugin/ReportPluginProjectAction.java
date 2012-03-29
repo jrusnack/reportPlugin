@@ -70,24 +70,6 @@ public class ReportPluginProjectAction implements Action{
    }
    
    
-  public void doGraphMap(final StaplerRequest req,
-           StaplerResponse rsp) throws IOException {
-      if (newGraphNotNeeded(req, rsp)) {
-         return;
-      }
-
-      final DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel> dataSetBuilder =
-      new DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel>();
-
-      //TODO: optimize by using cache
-      populateDataSetBuilder(dataSetBuilder);
-      new hudson.util.Graph(-1, getGraphWidth(), getGraphHeight()) {
-         protected JFreeChart createGraph() {
-           return GraphHelper.createChart(req, dataSetBuilder.build());
-         }
-      }.doMap(req, rsp);
-   }
-  
     /**
     * If number of builds hasn't changed and if checkIfModified() returns true,
     * no need to regenerate the graph. Browser should reuse it's cached image
