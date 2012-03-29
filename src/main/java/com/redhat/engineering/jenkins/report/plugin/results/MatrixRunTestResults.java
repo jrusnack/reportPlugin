@@ -12,18 +12,22 @@ import org.kohsuke.stapler.export.Exported;
  * @author nullin
  * @author farshidce
  */
-public class MatrixRunTestResults extends BaseResult implements RunTestResults{
+public class MatrixRunTestResults extends BaseResult implements TestResults{
     private List<MethodResult> passedTests = new ArrayList<MethodResult>();
     private List<MethodResult> failedTests = new ArrayList<MethodResult>();
     private List<MethodResult> skippedTests = new ArrayList<MethodResult>();
     private int totalTestCount;
     private List<TestResult> testList = new ArrayList<TestResult>();
     private long duration;
+    private int failedConfigCount;
+    private int skippedConfigCount;
     private int passedTestCount;
     private int failedTestCount;
     private int skippedTestCount;
     private Map<String, PackageResult> packageMap = new HashMap<String, PackageResult>();
     private AbstractBuild<?, ?> owner;
+    private List<MethodResult> failedConfigurationMethods = new ArrayList<MethodResult>();
+    private List<MethodResult> skippedConfigurationMethods = new ArrayList<MethodResult>();
     
     public MatrixRunTestResults(String name){
 	super(name);
@@ -104,10 +108,10 @@ public class MatrixRunTestResults extends BaseResult implements RunTestResults{
           skippedTestCount);
     }
     
-	/**
-	 * Updates the calculated fields
-	 */
-	public void tally() {
+    /**
+     * Updates the calculated fields
+     */
+    public void tally() {
 	failedTestCount = failedTests.size();
 	passedTestCount = passedTests.size();
 	skippedTestCount = skippedTests.size();
@@ -141,5 +145,45 @@ public class MatrixRunTestResults extends BaseResult implements RunTestResults{
 	    pkgResult.tally();
 	    duration += pkgResult.getDuration();
 	}
+    }
+
+
+
+    public Set<String> getPackageNames() {
+	return packageMap.keySet();
+    }
+
+    public Map<String, PackageResult> getPackageMap() {
+	return packageMap;
+    }
+
+    public int getFailedConfigCount() {
+	return failedConfigCount;
+    }
+    
+    public int getSkippedConfigCount(){
+	return skippedConfigCount;
+    }
+
+    public List<MethodResult> getFailedConfigs() {
+	return failedConfigurationMethods;
+    }
+
+    public List<MethodResult> getSkippedConfigs() {
+	return skippedConfigurationMethods;
+    }
+
+    public boolean isMatrixBuildTestResult() {
+	return false;
+    }
+
+    public List<TestResults> getRuns() {
+	List<TestResults> runTestResults = new ArrayList<TestResults>();
+	runTestResults.add(this);
+	return runTestResults;
+    }
+
+    public boolean isRunTestResult() {
+	return true;
     }
 }

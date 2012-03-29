@@ -6,11 +6,9 @@ import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.util.ChartUtil;
 import hudson.util.DataSetBuilder;
-import java.io.IOException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
-import org.jfree.chart.JFreeChart;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -69,6 +67,7 @@ public class ReportPluginProjectAction implements Action{
       return true;
    }
    
+    
    
     /**
     * If number of builds hasn't changed and if checkIfModified() returns true,

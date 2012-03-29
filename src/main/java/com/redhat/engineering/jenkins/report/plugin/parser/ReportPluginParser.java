@@ -45,7 +45,7 @@ public class ReportPluginParser {
     */
    private Map<String, ClassResult> classResultMap = new HashMap<String, ClassResult>();
    private Map<String, List<String>> methodGroupMap = new HashMap<String, List<String>>();
-   private RunTestResults finalResults;
+   private TestResults finalResults;
    private List<TestResult> testList;
    private List<ClassResult> currentClassList;
    private List<MethodResult> currentMethodList;
@@ -108,7 +108,7 @@ public class ReportPluginParser {
     *			packed in FreeStyleTestResults otherwise
     *			
     */
-   public RunTestResults parse(FilePath[] paths, boolean isMulticonf) {
+   public TestResults parse(FilePath[] paths, boolean isMulticonf) {
       if (null == paths) {
          log("File paths not specified. paths var is null. Returning empty test results.");
          if (isMulticonf){

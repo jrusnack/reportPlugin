@@ -5,7 +5,6 @@
 package com.redhat.engineering.jenkins.report.plugin.parser;
 
 import com.redhat.engineering.jenkins.report.plugin.results.PackageResult;
-import com.redhat.engineering.jenkins.report.plugin.results.RunTestResults;
 import com.redhat.engineering.jenkins.report.plugin.results.TestResults;
 import hudson.FilePath;
 import java.io.File;
@@ -106,7 +105,7 @@ public class ReportPluginParserTest {
       junit.framework.Assert.assertEquals(1, results.getPassedTestCount());
    }
 
-   private RunTestResults getResults(String filename) {
+   private TestResults getResults(String filename) {
       ReportPluginParser parser = new ReportPluginParser();
       FilePath[] filePaths = new FilePath[1];
       filePaths[0] = new FilePath(new File(filename));
