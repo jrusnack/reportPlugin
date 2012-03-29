@@ -139,6 +139,8 @@ why we must implement direct method is explained in former paragraph (filtering)
 	|	MatrixRunTestRes	|	|	FreeStyleTestRes	|
 	-------------------------	-------------------------
 
+Try: change abstract class TestResults to interface and get rid of RunTestRes
+
 
 
 4. DIRECTION

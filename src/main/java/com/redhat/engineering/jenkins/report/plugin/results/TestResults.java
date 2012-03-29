@@ -16,7 +16,7 @@ public abstract class TestResults extends BaseResult implements RunTestResults{
     private int skippedTestCount;
     private int totalTestCount;
     
-   private Map<String, PackageResult> packageMap = new HashMap<String, PackageResult>();
+    private Map<String, PackageResult> packageMap = new HashMap<String, PackageResult>();
     
     // stores list of all tests performed 
     private List<TestResult> testList = new ArrayList<TestResult>();
@@ -29,12 +29,12 @@ public abstract class TestResults extends BaseResult implements RunTestResults{
 	super(name);
     }
     
-    public void addUniqueTests(List<TestResult> testList);
+    public abstract void addUniqueTests(List<TestResult> testList);
 
     /**
      * Updates calculated fields
      */
-    public void tally();
+    public abstract void tally();
 
     public List<MethodResult> getFailedTests(){
 	return failedTests;

@@ -3,7 +3,9 @@ package com.redhat.engineering.jenkins.report.plugin.results;
 
 import hudson.matrix.MatrixRun;
 import hudson.model.Result;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,6 +19,8 @@ public class MatrixBuildTestResults extends TestResults {
     private Map<String, MatrixRunTestResults> results = new HashMap<String, MatrixRunTestResults>();
     private int failedConfigCount;
     private int skippedConfigCount;
+    private List<MethodResult> failedConfigurationMethods = new ArrayList<MethodResult>();
+    private List<MethodResult> skippedConfigurationMethods = new ArrayList<MethodResult>();
 
     public MatrixBuildTestResults(String name) {
 	super(name);
@@ -35,9 +39,10 @@ public class MatrixBuildTestResults extends TestResults {
     public boolean addMatrixRunTestResults(MatrixRun mrun, MatrixRunTestResults results){
 	
 	// test if already added
-	if(this.results.get(mrun) == null){
+	if(this.results.get(mrun.toString()) == null){
 	    this.results.put(mrun.getDisplayName(), results);
-	    // FIXME: update getFailedConfigCount and stability of build/owner
+	    // FIXME: update getFailedConfigCount
+	    // FIXME: is owner really the one we should set stability?
 	    if (results.getFailedTestCount() > 0){
 		owner.setResult(Result.UNSTABLE);
 	    } else {
@@ -59,6 +64,14 @@ public class MatrixBuildTestResults extends TestResults {
     @Override
     public boolean isMatrixBuildTestResult() {
 	return true;
+    }
+
+    public List<MethodResult> getFailedConfigs() {
+	return failedConfigurationMethods;
+    }
+
+    public List<MethodResult> getSkippedConfigs() {
+	return skippedConfigurationMethods;
     }
 
     
