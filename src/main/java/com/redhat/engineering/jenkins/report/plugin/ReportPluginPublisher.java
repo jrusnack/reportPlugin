@@ -169,12 +169,17 @@ public class ReportPluginPublisher extends Recorder{
 	} 
 
 	if (rResults.getTestList().size() > 0) {
+	    /*
+	     * Set owner
+	     */
+	    rResults.setOwner(mrun);
 	    
 	    /*
-	    * Add matrix run rResults to parent build`s bResults
-	    */ 
+	     * Add matrix run rResults to parent build`s bResults
+	     */ 
 	    ReportPluginBuildAction action = mrun.getParentBuild().getAction(ReportPluginBuildAction.class);
 	    action.getBuildResults().addMatrixRunTestResults(mrun, rResults);
+	    
 	    
 	    if (rResults.getFailedTestCount() > 0) {
 		mrun.setResult(Result.UNSTABLE);

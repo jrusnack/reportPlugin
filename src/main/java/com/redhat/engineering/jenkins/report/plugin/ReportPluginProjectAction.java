@@ -1,14 +1,17 @@
 
 package com.redhat.engineering.jenkins.report.plugin;
 
+import com.redhat.engineering.jenkins.report.plugin.util.GraphHelper;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.util.ChartUtil;
 import hudson.util.DataSetBuilder;
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import org.jfree.chart.JFreeChart;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -103,25 +106,62 @@ public class ReportPluginProjectAction implements Action{
       }
       return false;
    }
-  
-     protected void populateDataSetBuilder(DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel> dataset) {
-
-      for (AbstractBuild<?, ?> build = getProject().getLastBuild();
-               build != null; build = build.getPreviousBuild()) {
-         ChartUtil.NumberOnlyBuildLabel label = new ChartUtil.NumberOnlyBuildLabel(build);
-         ReportPluginBuildAction action = build.getAction(ReportPluginBuildAction.class);
-         if (action != null) {
-            dataset.add(action.getPassedTestCount(), "Passed", label);
-            dataset.add(action.getFailedTestCount(), "Failed", label);
-            dataset.add(action.getSkippedTestCount(), "Skipped", label);
-         } else {
-            //even if testng plugin wasn't run with this build,
-            //we should add this build to the graph
-            dataset.add(0, "Passed", label);
-            dataset.add(0, "Failed", label);
-            dataset.add(0, "Skipped", label);
-         }
+   
+   public void doGraphMap(final StaplerRequest req,
+           StaplerResponse rsp) throws IOException {
+      if (newGraphNotNeeded(req, rsp)) {
+         return;
       }
+
+      final DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel> dataSetBuilder =
+      new DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel>();
+
+      //TODO: optimize by using cache
+      populateDataSetBuilder(dataSetBuilder);
+      new hudson.util.Graph(-1, getGraphWidth(), getGraphHeight()) {
+         protected JFreeChart createGraph() {
+           return GraphHelper.createChart(req, dataSetBuilder.build());
+         }
+      }.doMap(req, rsp);
+   }
+  
+    protected void populateDataSetBuilder(DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel> dataset) {
+
+	for (AbstractBuild<?, ?> build = getProject().getLastBuild();
+		build != null; build = build.getPreviousBuild()) 
+	{
+	    ChartUtil.NumberOnlyBuildLabel label = new ChartUtil.NumberOnlyBuildLabel(build);
+	    ReportPluginBuildAction action = build.getAction(ReportPluginBuildAction.class);
+	    if (action != null) {
+		dataset.add(action.getPassedTestCount(), "Passed", label);
+		dataset.add(action.getFailedTestCount(), "Failed", label);
+		dataset.add(action.getSkippedTestCount(), "Skipped", label);
+	    } else {
+		//even if testng plugin wasn't run with this build,
+		//we should add this build to the graph
+		dataset.add(0, "Passed", label);
+		dataset.add(0, "Failed", label);
+		dataset.add(0, "Skipped", label);
+	    }
+	}
+    }
+    
+    /**
+    * Getter for property 'graphWidth'.
+    *
+    * @return Value for property 'graphWidth'.
+    */
+   public int getGraphWidth() {
+      return 500;
+   }
+
+   /**
+    * Getter for property 'graphHeight'.
+    *
+    * @return Value for property 'graphHeight'.
+    */
+   public int getGraphHeight() {
+      return 200;
    }
    
 }

@@ -19,9 +19,13 @@ import java.io.Serializable;
 public class ReportPluginBuildAction implements Action, Serializable{
     MatrixBuildTestResults results;
     AbstractBuild<?, ?> build;
-    private Number passedTestCount;
-    private Number failedTestCount;
-    private Number skippedTestCount;
+    
+   /*
+    * Cache test counts to speed up loading of graphs
+    */
+   private transient int passedTestCount;
+   private transient int failedTestCount;
+   private transient int skippedTestCount;
     
     public ReportPluginBuildAction(AbstractBuild<?, ?> build, MatrixBuildTestResults results){
 	super();
@@ -45,22 +49,22 @@ public class ReportPluginBuildAction implements Action, Serializable{
     public String getUrlName() {
 	return Definitions.__URL_NAME;
     }
-
-    Number getPassedTestCount() {
-	return this.passedTestCount;
-    }
-
-    Number getFailedTestCount() {
-	return this.failedTestCount;
-    }
-
-    Number getSkippedTestCount() {
-	return this.skippedTestCount;
-    }
     
     //FIXME: implement
     static MatrixRunTestResults loadResults(MatrixRun mrun, PrintStream logger) {
 	throw new UnsupportedOperationException("Not yet implemented");
+    }
+    
+    public int getPassedTestCount() {
+	return this.passedTestCount;
+    }
+
+    public int getFailedTestCount() {
+	return this.failedTestCount;
+    }
+
+    public int getSkippedTestCount() {
+	return this.skippedTestCount;
     }
     
 }
