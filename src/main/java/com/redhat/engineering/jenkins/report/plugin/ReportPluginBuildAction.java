@@ -4,8 +4,8 @@
  */
 package com.redhat.engineering.jenkins.report.plugin;
 
-import com.redhat.engineering.jenkins.report.plugin.results.MatrixBuildTestResults;
-import com.redhat.engineering.jenkins.report.plugin.results.MatrixRunTestResults;
+import com.redhat.engineering.jenkins.testparser.results.MatrixBuildTestResults;
+import com.redhat.engineering.jenkins.testparser.results.MatrixRunTestResults;
 import hudson.matrix.MatrixRun;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
