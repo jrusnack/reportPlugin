@@ -24,12 +24,7 @@ public class ReportPluginBuildAction implements Action, Serializable{
     MatrixBuildTestResults results;
     AbstractBuild<?, ?> build;
     
-   /*
-    * Cache test counts to speed up loading of graphs
-    */
-   private transient int passedTestCount;
-   private transient int failedTestCount;
-   private transient int skippedTestCount;
+   
     
     public ReportPluginBuildAction(AbstractBuild<?, ?> build, MatrixBuildTestResults results){
 	super();
@@ -37,10 +32,12 @@ public class ReportPluginBuildAction implements Action, Serializable{
 	this.build = build;
 	results.setOwner(this.build);
 	
-	//initialize the cached values when TestNGBuildAction is instantiated
-	this.passedTestCount = results.getPassedTestCount();
-	this.failedTestCount = results.getFailedTestCount();
-	this.skippedTestCount = results.getSkippedTestCount();
+	/* TODO: speed up by caching, this would work but we need to update 
+	 * these fields every time we add MatrixRunTestResults to MatrixBuildTestResults
+	 * results
+	 * Example:
+	 * this.passedTestCount = results.getPassedTestCount();
+	 */
     }
     
 
@@ -100,15 +97,21 @@ public class ReportPluginBuildAction implements Action, Serializable{
     }
     
     public int getPassedTestCount() {
-	return this.passedTestCount;
+	// TODO: speed up via caching
+	// return this.passedTestCount;
+	return results.getPassedTestCount();
     }
 
     public int getFailedTestCount() {
-	return this.failedTestCount;
+	// TODO: speed up via caching
+	//return this.failedTestCount;
+	return results.getFailedTestCount();
     }
 
     public int getSkippedTestCount() {
-	return this.skippedTestCount;
+	// TODO: speed up via caching
+	//return this.skippedTestCount;
+	return results.getSkippedTestCount();
     }
     
 }
