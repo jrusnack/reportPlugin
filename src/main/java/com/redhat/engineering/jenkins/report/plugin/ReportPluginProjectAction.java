@@ -54,77 +54,100 @@ public class ReportPluginProjectAction implements Action{
     *
     * @return Value for property 'graphAvailable'.
     */
-   public boolean isGraphActive() {
-      AbstractBuild<?, ?> build = getProject().getLastBuild();
-      // in order to have a graph, we must have at least two points.
-      int numPoints = 0;
-      while (numPoints < 2) {
-         if (build == null) {
-            return false;
-         }
-         if (build.getAction(ReportPluginBuildAction.class) != null) {
-            numPoints++;
-         }
-         build = build.getPreviousBuild();
-      }
-      return true;
-   }
-   
+    public boolean isGraphActive() {
+	AbstractBuild<?, ?> build = getProject().getLastBuild();
+	// in order to have a graph, we must have at least two points.
+	int numPoints = 0;
+	while (numPoints < 2) {
+	    if (build == null) {
+		return false;
+	    }
+	    if (build.getAction(ReportPluginBuildAction.class) != null) {
+		numPoints++;
+	    }
+	    build = build.getPreviousBuild();
+	}
+	return true;
+    }
+
+
+
+	/**
+	* If number of builds hasn't changed and if checkIfModified() returns true,
+	* no need to regenerate the graph. Browser should reuse it's cached image
+	*
+	* @param req
+	* @param rsp
+	* @return true, if new image does NOT need to be generated, false otherwise
+	*/
+    private boolean newGraphNotNeeded(final StaplerRequest req,
+	    StaplerResponse rsp) {
+	Calendar t = getProject().getLastCompletedBuild().getTimestamp();
+	Integer prevNumBuilds = requestMap.get(req.getRequestURI());
+	int numBuilds = getProject().getBuilds().size();
+
+	//change null to 0
+	prevNumBuilds = prevNumBuilds == null ? 0 : prevNumBuilds;
+	if (prevNumBuilds != numBuilds) {
+	    requestMap.put(req.getRequestURI(), numBuilds);
+	}
+
+	if (requestMap.size() > 10) {
+	    //keep map size in check
+	    requestMap.clear();
+	}
+
+	if (prevNumBuilds == numBuilds && req.checkIfModified(t, rsp)) {
+	    /*
+	    * checkIfModified() is after '&&' because we want it evaluated only
+	    * if number of builds is different
+	    */
+	    return true;
+	}
+	return false;
+    }
+
+    public void doGraphMap(final StaplerRequest req,
+	    StaplerResponse rsp) throws IOException {
+	if (newGraphNotNeeded(req, rsp)) {
+	    return;
+	}
+
+	final DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel> dataSetBuilder =
+	new DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel>();
+
+	//TODO: optimize by using cache
+	populateDataSetBuilder(dataSetBuilder);
+	new hudson.util.Graph(-1, getGraphWidth(), getGraphHeight()) {
+	    protected JFreeChart createGraph() {
+	    return GraphHelper.createChart(req, dataSetBuilder.build());
+	    }
+	}.doMap(req, rsp);
+    }
     
-   
     /**
-    * If number of builds hasn't changed and if checkIfModified() returns true,
-    * no need to regenerate the graph. Browser should reuse it's cached image
-    *
-    * @param req
-    * @param rsp
-    * @return true, if new image does NOT need to be generated, false otherwise
+    * Generates the graph that shows test pass/fail ratio
+    * @param req -
+    * @param rsp -
+    * @throws IOException -
     */
-   private boolean newGraphNotNeeded(final StaplerRequest req,
-         StaplerResponse rsp) {
-      Calendar t = getProject().getLastCompletedBuild().getTimestamp();
-      Integer prevNumBuilds = requestMap.get(req.getRequestURI());
-      int numBuilds = getProject().getBuilds().size();
+    public void doGraph(final StaplerRequest req,
+			StaplerResponse rsp) throws IOException {
+	if (newGraphNotNeeded(req, rsp)) {
+	    return;
+	}
 
-      //change null to 0
-      prevNumBuilds = prevNumBuilds == null ? 0 : prevNumBuilds;
-      if (prevNumBuilds != numBuilds) {
-        requestMap.put(req.getRequestURI(), numBuilds);
-      }
+	final DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel> dataSetBuilder =
+		new DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel>();
 
-      if (requestMap.size() > 10) {
-        //keep map size in check
-        requestMap.clear();
-      }
+	populateDataSetBuilder(dataSetBuilder);
+	new hudson.util.Graph(-1, getGraphWidth(), getGraphHeight()) {
+	    protected JFreeChart createGraph() {
+		return GraphHelper.createChart(req, dataSetBuilder.build());
+	    }
+	}.doPng(req,rsp);
+    }
 
-      if (prevNumBuilds == numBuilds && req.checkIfModified(t, rsp)) {
-         /*
-          * checkIfModified() is after '&&' because we want it evaluated only
-          * if number of builds is different
-          */
-         return true;
-      }
-      return false;
-   }
-   
-   public void doGraphMap(final StaplerRequest req,
-           StaplerResponse rsp) throws IOException {
-      if (newGraphNotNeeded(req, rsp)) {
-         return;
-      }
-
-      final DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel> dataSetBuilder =
-      new DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel>();
-
-      //TODO: optimize by using cache
-      populateDataSetBuilder(dataSetBuilder);
-      new hudson.util.Graph(-1, getGraphWidth(), getGraphHeight()) {
-         protected JFreeChart createGraph() {
-           return GraphHelper.createChart(req, dataSetBuilder.build());
-         }
-      }.doMap(req, rsp);
-   }
-  
     protected void populateDataSetBuilder(DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel> dataset) {
 
 	for (AbstractBuild<?, ?> build = getProject().getLastBuild();
@@ -137,7 +160,7 @@ public class ReportPluginProjectAction implements Action{
 		dataset.add(action.getFailedTestCount(), "Failed", label);
 		dataset.add(action.getSkippedTestCount(), "Skipped", label);
 	    } else {
-		//even if testng plugin wasn't run with this build,
+		//even if report plugin wasn't run with this build,
 		//we should add this build to the graph
 		dataset.add(0, "Passed", label);
 		dataset.add(0, "Failed", label);
@@ -145,23 +168,23 @@ public class ReportPluginProjectAction implements Action{
 	    }
 	}
     }
-    
+
     /**
     * Getter for property 'graphWidth'.
     *
     * @return Value for property 'graphWidth'.
     */
-   public int getGraphWidth() {
-      return 500;
-   }
+    public int getGraphWidth() {
+	return 500;
+    }
 
-   /**
-    * Getter for property 'graphHeight'.
-    *
-    * @return Value for property 'graphHeight'.
-    */
-   public int getGraphHeight() {
-      return 200;
-   }
-   
+    /**
+	* Getter for property 'graphHeight'.
+	*
+	* @return Value for property 'graphHeight'.
+	*/
+    public int getGraphHeight() {
+	return 200;
+    }
+
 }

@@ -3,6 +3,7 @@ package com.redhat.engineering.jenkins.report.plugin;
 
 import com.redhat.engineering.jenkins.testparser.results.MatrixBuildTestResults;
 import com.redhat.engineering.jenkins.testparser.results.MatrixRunTestResults;
+import com.redhat.engineering.jenkins.testparser.results.TestResults;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -17,10 +18,7 @@ import hudson.util.FormValidation;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -90,9 +88,10 @@ public class ReportPluginPublisher extends Recorder{
 		/*
 		 * MatrixBuildTestResults will store mapping matrix run -> test results
 		 */
-		MatrixBuildTestResults bResults = new MatrixBuildTestResults("");
+		MatrixBuildTestResults bResults = new MatrixBuildTestResults(UUID.randomUUID().toString());
 		ReportPluginBuildAction action = new 
 			ReportPluginBuildAction(mrun.getParentBuild(), bResults);
+		bResults.setOwner(mbuild);
 		mrun.getParentBuild().getActions().add(action);
 	    }
 	    return true;
@@ -153,7 +152,7 @@ public class ReportPluginPublisher extends Recorder{
 	    return true;
 	}
 
-	MatrixRunTestResults rResults = new MatrixRunTestResults("");
+	TestResults rResults = new MatrixRunTestResults(UUID.randomUUID().toString());
 
 	/*
 	 * Parse results
@@ -177,8 +176,9 @@ public class ReportPluginPublisher extends Recorder{
 	    /*
 	     * Add matrix run rResults to parent build`s bResults
 	     */ 
-	    ReportPluginBuildAction action = mrun.getParentBuild().getAction(ReportPluginBuildAction.class);
-	    action.getBuildResults().addMatrixRunTestResults(mrun, rResults);
+	    MatrixBuildTestResults bResults = mrun.getParentBuild().getAction(ReportPluginBuildAction.class).getBuildResults();
+	    bResults.addMatrixRunTestResults(mrun, rResults);
+	    rResults.setParent(bResults);
 	    
 	    
 	    if (rResults.getFailedTestCount() > 0) {
