@@ -2,6 +2,8 @@
 package com.redhat.engineering.jenkins.report.plugin;
 
 import com.redhat.engineering.jenkins.report.plugin.util.GraphHelper;
+import com.redhat.engineering.jenkins.testparser.results.Filter;
+import hudson.matrix.*;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -12,6 +14,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import org.jfree.chart.JFreeChart;
+import org.jfree.util.Log;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -49,6 +52,24 @@ public class ReportPluginProjectAction implements Action{
     public AbstractProject<?, ?> getProject() {	
 	return project;
     }
+    
+    // TODO: optimize
+    public boolean combinationExists( AbstractProject ap, Combination c){
+	if(ap instanceof MatrixProject){
+	    MatrixProject mp = (MatrixProject) ap;
+	    MatrixConfiguration mc = mp.getItem(c);
+	    
+	    /* Verify matrix configuration */
+	    if( mc == null || !mc.isActiveConfiguration()) {
+		return false;
+	    }
+	    
+	    return true;
+	}	
+	return false;	
+    }
+    
+    
     /**
     * Returns <code>true</code> if there is a graph to plot.
     *
@@ -117,7 +138,7 @@ public class ReportPluginProjectAction implements Action{
 	new DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel>();
 
 	//TODO: optimize by using cache
-	populateDataSetBuilder(dataSetBuilder);
+	populateDataSetBuilder(dataSetBuilder,null);
 	new hudson.util.Graph(-1, getGraphWidth(), getGraphHeight()) {
 	    protected JFreeChart createGraph() {
 	    return GraphHelper.createChart(req, dataSetBuilder.build());
@@ -140,7 +161,7 @@ public class ReportPluginProjectAction implements Action{
 	final DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel> dataSetBuilder =
 		new DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel>();
 
-	populateDataSetBuilder(dataSetBuilder);
+	populateDataSetBuilder(dataSetBuilder,null);
 	new hudson.util.Graph(-1, getGraphWidth(), getGraphHeight()) {
 	    protected JFreeChart createGraph() {
 		return GraphHelper.createChart(req, dataSetBuilder.build());
@@ -148,14 +169,29 @@ public class ReportPluginProjectAction implements Action{
 	}.doPng(req,rsp);
     }
 
-    protected void populateDataSetBuilder(DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel> dataset) {
+    /**
+     * Fill dataset with data. Optionally Filter may be passed to this method, 
+     * which will filter configurations (meaningful if we want results aggregated
+     * only from some subset of all matrix runs).
+     * 
+     * @param dataset	
+     * @param filter	Optional, can be null.
+     */
+    protected void populateDataSetBuilder(DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel> dataset,
+	    Filter filter) {
 
 	for (AbstractBuild<?, ?> build = getProject().getLastBuild();
 		build != null; build = build.getPreviousBuild()) 
 	{
 	    ChartUtil.NumberOnlyBuildLabel label = new ChartUtil.NumberOnlyBuildLabel(build);
 	    ReportPluginBuildAction action = build.getAction(ReportPluginBuildAction.class);
+	    
 	    if (action != null) {
+		// TODO: optimize
+		if(filter != null){
+		    action.addFilter(filter);
+		}
+		
 		dataset.add(action.getPassedTestCount(), "Passed", label);
 		dataset.add(action.getFailedTestCount(), "Failed", label);
 		dataset.add(action.getSkippedTestCount(), "Skipped", label);

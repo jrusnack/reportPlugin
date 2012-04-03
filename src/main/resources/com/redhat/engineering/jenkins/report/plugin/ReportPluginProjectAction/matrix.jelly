@@ -1,0 +1,26 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <div id='matrix'>
+
+	<h2>Matrix</h2>
+	<f:form method="post" action="configSubmit" name="custommatrix">
+	    <!-- Optimized case when there's only one dimension to the axis (or 
+		    zero dimension) -->
+	    <j:when test="${empty(o.x) and empty(o.y)}">
+		    <h2>${%Configurations}</h2>
+		    <j:forEach var="p" items="${o.rows[0][0]}">
+			    <!-- <d:invokeBody /> -->
+			    <st:include page="main.jelly" />
+			    <st:nbsp />
+			    <j:if test="${!it.combinationExists(build, p.combination)}">
+				    <j:set var="changed" value="1" />
+			    </j:if>
+		    </j:forEach>
+	    </j:when>
+
+	
+	</f:form>
+    
+    </div>
+    
+</j:jelly>

@@ -5,6 +5,7 @@
 package com.redhat.engineering.jenkins.report.plugin;
 
 import com.redhat.engineering.jenkins.testparser.Parser;
+import com.redhat.engineering.jenkins.testparser.results.Filter;
 import com.redhat.engineering.jenkins.testparser.results.MatrixBuildTestResults;
 import com.redhat.engineering.jenkins.testparser.results.MatrixRunTestResults;
 import com.redhat.engineering.jenkins.testparser.results.TestResults;
@@ -24,10 +25,8 @@ public class ReportPluginBuildAction implements Action, Serializable{
     MatrixBuildTestResults results;
     AbstractBuild<?, ?> build;
     
-   
     
     public ReportPluginBuildAction(AbstractBuild<?, ?> build, MatrixBuildTestResults results){
-	super();
 	this.results = results;
 	this.build = build;
 	results.setOwner(this.build);
@@ -114,4 +113,12 @@ public class ReportPluginBuildAction implements Action, Serializable{
 	return results.getSkippedTestCount();
     }
     
+    
+    public void addFilter(Filter filter){
+	results.addFilter(filter);
+    }
+    
+    public void removeFilter(){
+	results.removeFilter();
+    }
 }

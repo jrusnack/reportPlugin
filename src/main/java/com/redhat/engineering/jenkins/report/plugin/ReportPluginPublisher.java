@@ -90,8 +90,7 @@ public class ReportPluginPublisher extends Recorder{
 		 */
 		MatrixBuildTestResults bResults = new MatrixBuildTestResults(UUID.randomUUID().toString());
 		ReportPluginBuildAction action = new 
-			ReportPluginBuildAction(mrun.getParentBuild(), bResults);
-		bResults.setOwner(mbuild);
+			ReportPluginBuildAction(mbuild, bResults);
 		mrun.getParentBuild().getActions().add(action);
 	    }
 	    return true;

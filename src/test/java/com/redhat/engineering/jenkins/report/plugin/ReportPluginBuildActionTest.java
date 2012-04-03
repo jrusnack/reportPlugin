@@ -4,8 +4,8 @@
  */
 package com.redhat.engineering.jenkins.report.plugin;
 
+import com.redhat.engineering.jenkins.testparser.results.MatrixBuildTestResults;
 import org.junit.*;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -27,34 +27,23 @@ public class ReportPluginBuildActionTest {
     
     @Before
     public void setUp() {
-	a = new ReportPluginBuildAction(null,null);
+	
     }
     
     @After
     public void tearDown() {
     }
 
+    
     /**
-     * Test of getIconFileName method, of class ReportPluginBuildAction.
+     * Test constructor
      */
-    @Test
-    public void testGetIconFileName() {
-	assertEquals(a.getIconFileName(), Definitions.__ICON_FILE_NAME);
+    @Test(expected = IllegalArgumentException.class)
+    public void testReportPluginBuildAction(){
+	MatrixBuildTestResults tr = new MatrixBuildTestResults(null);
+	ReportPluginBuildAction a = new ReportPluginBuildAction(null, tr);
     }
-
-    /**
-     * Test of getDisplayName method, of class ReportPluginBuildAction.
-     */
-    @Test
-    public void testGetDisplayName() {
-	assertEquals(a.getDisplayName(), Definitions.__DISPLAY_NAME);
-    }
-
-    /**
-     * Test of getUrlName method, of class ReportPluginBuildAction.
-     */
-    @Test
-    public void testGetUrlName() {
-	assertEquals(a.getUrlName(), Definitions.__URL_NAME);
-    }
+    
+    
+    
 }
