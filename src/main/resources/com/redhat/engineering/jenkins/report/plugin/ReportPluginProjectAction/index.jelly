@@ -30,13 +30,13 @@ function click2Change( status )
 
 
 
-	<h1>Report Plugin Results Trend</h1>
+	<h1>${%Report Plugin Results Trend}</h1>
 	<j:choose>
 	    <j:when test="${it.graphActive}">
 	    <img src="graph" lazymap="graphMap?rel=${it.project.lastCompletedBuild.upUrl}"
 		    alt="[Test result trend chart]"/>
 	</j:when>
-	<j:otherwise>Need at least 2 builds with results to show trend graph
+	<j:otherwise>${%Need at least 2 builds with results to show trend graph}
 	</j:otherwise>
 	</j:choose>
 
@@ -51,11 +51,11 @@ function click2Change( status )
 
 	<j:choose>
 	    <j:when test="${o!=null}">
-		This is multiconf. project - filtering allowed.
+		${%This is multiconf. project - filtering allowed.}
 		<st:include page="matrix.jelly"/>
 	    </j:when>
 	    <j:otherwise>
-		<h2>This is not a multiconfiguration project, so filtering is disabled.</h2>		
+		<h2>${%This is not a multiconfiguration project, so filtering is disabled.}</h2>		
 	    </j:otherwise>	
 	</j:choose>
 

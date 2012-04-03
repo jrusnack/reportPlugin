@@ -3,7 +3,9 @@ package com.redhat.engineering.jenkins.report.plugin;
 
 import com.redhat.engineering.jenkins.report.plugin.util.GraphHelper;
 import com.redhat.engineering.jenkins.testparser.results.Filter;
-import hudson.matrix.*;
+import hudson.matrix.Combination;
+import hudson.matrix.MatrixConfiguration;
+import hudson.matrix.MatrixProject;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -13,8 +15,8 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import javax.servlet.ServletException;
 import org.jfree.chart.JFreeChart;
-import org.jfree.util.Log;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -221,6 +223,12 @@ public class ReportPluginProjectAction implements Action{
 	*/
     public int getGraphHeight() {
 	return 200;
+    }
+    
+    //FIXME: implement
+    public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws ServletException,
+            IOException, InterruptedException {
+	
     }
 
 }
