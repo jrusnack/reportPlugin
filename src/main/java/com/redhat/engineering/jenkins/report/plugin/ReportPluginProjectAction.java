@@ -79,6 +79,15 @@ public class ReportPluginProjectAction implements Action{
     }
     
     /**
+     * Set all currently known combinations to unchecked state
+     */
+    public void setAllCombinationUnchecked(){
+	for (String comb: checkedCombinations.keySet()){
+	    checkedCombinations.put(comb, false);
+	}
+    }
+    
+    /**
      * Returns true when combination was checked by user
      */
     public boolean isCombinationChecked(Combination combination){
@@ -275,9 +284,10 @@ public class ReportPluginProjectAction implements Action{
 	JSONObject formData = req.getSubmittedForm();
 	
 	String uuid = "RP_" + project.getName() + "_" + System.currentTimeMillis();
-	
 	filter = new Filter(uuid);
+	setAllCombinationUnchecked();
 	refresh = true;
+	
         Map map = req.getParameterMap();
 	Set<String> keys = map.keySet();
 	for(String key : keys){
