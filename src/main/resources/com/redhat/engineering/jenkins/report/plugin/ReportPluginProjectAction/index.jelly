@@ -51,9 +51,12 @@ function click2Change( status )
 	
 	
 	<f:form method="post" action="configSubmit" name="reportplugin">
-
-	<st:include page="matrix.jelly"/>
-
+	    <f:radio name="buildsFilter" value="ALL" checked="${it.buildsAllChecked}"/>All builds<br />
+	    <f:radio name="buildsFilter" value="RECENT" checked="${it.buildsRecentChecked}"/>Number of recent builds: 
+		<f:textbox name="numLastBuilds" clazz="positive-number" style="width: 50px" value="${it.buildsRecentNumber}" /><br />
+	    <f:radio name="buildsFilter" value="INTERVAL" checked="${it.buildsIntervalChecked}" /><br />
+	    <st:include page="matrix.jelly"/>
+	    <f:submit value="${%Rebuild Report}" />
 	</f:form>
 
       </l:main-panel>

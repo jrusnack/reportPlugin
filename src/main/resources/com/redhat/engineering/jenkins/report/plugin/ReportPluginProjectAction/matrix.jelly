@@ -4,7 +4,9 @@
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <div id='matrix'>
+    
+    																									       
+	<div id='matrix'>
 
 	    <j:set var="prefix" value="${it.getPrefix()}" />
 	    <j:choose>
@@ -87,7 +89,6 @@
 	    <a href="#" onclick="click2Change(2);">${%All}</a> - 
 	    <a href="#" onclick="click2Change(0);">${%None}</a>
 	    <br/>
-	    <f:submit value="${%Rebuild Report}" />
 
     
     </div>

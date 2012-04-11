@@ -12,10 +12,7 @@ import hudson.model.Action;
 import hudson.util.ChartUtil;
 import hudson.util.DataSetBuilder;
 import java.io.IOException;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.servlet.ServletException;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
@@ -28,7 +25,6 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author Jan Rusnacko (jrusnack at redhat.com)
  */
 public class ReportPluginProjectAction implements Action{
-    private int numLastBuilds;
     private final AbstractProject<?, ?> project;
     private boolean refresh;
     private Filter filter;
@@ -42,10 +38,33 @@ public class ReportPluginProjectAction implements Action{
 	*/
     private transient Map<String, Integer> requestMap = new HashMap<String, Integer>();
     
+    // indicates how should builds be filtered
+    private BuildFilteringMethod buildFilteringMethod;
+    
+    // stores value when buildFilteringMethod is RECENT
+    private int numLastBuilds;
+    
+    // stores builds to be used
+    private List<AbstractBuild<?, ?>> builds;
+    
+    enum BuildFilteringMethod {
+	ALL, RECENT, INTERVAL
+    }
+    
+    
     public ReportPluginProjectAction(AbstractProject<?, ?> project){
 	this.project = project;
 	this.checkedCombinations = new HashMap<String, Boolean>();
 	refresh = false;
+	/*
+	 * Add all builds by default
+	 */
+	builds = new ArrayList<AbstractBuild<?, ?>>();
+	buildFilteringMethod = BuildFilteringMethod.ALL;
+	for (AbstractBuild<?, ?> build = project.getLastBuild();
+		build != null; build = build.getPreviousBuild()){
+	    builds.add(build);
+	}
     }
     
     public String getIconFileName() {
@@ -230,8 +249,7 @@ public class ReportPluginProjectAction implements Action{
     protected void populateDataSetBuilder(DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel> dataset,
 	    Filter filter) {
 
-	for (AbstractBuild<?, ?> build = getProject().getLastBuild();
-		build != null; build = build.getPreviousBuild()) 
+	for (AbstractBuild<?, ?> build : builds) 
 	{
 	    ChartUtil.NumberOnlyBuildLabel label = new ChartUtil.NumberOnlyBuildLabel(build);
 	    ReportPluginBuildAction action = build.getAction(ReportPluginBuildAction.class);
@@ -281,17 +299,28 @@ public class ReportPluginProjectAction implements Action{
             IOException, InterruptedException {
 	AbstractProject project = req.findAncestorObject(AbstractProject.class);
 	
-	JSONObject formData = req.getSubmittedForm();
-	
 	String uuid = "RP_" + project.getName() + "_" + System.currentTimeMillis();
 	filter = new Filter(uuid);
 	setAllCombinationUnchecked();
 	refresh = true;
 	
+	/*
+	 * Determine how builds are filtered (all, last N builds, interval)
+	 */
+	buildFilteringMethod = BuildFilteringMethod.valueOf(req.getParameter("buildsFilter"));
+	/*
+	 * If we filter only last N builds, get value of N
+	 */
+	if(buildFilteringMethod == BuildFilteringMethod.RECENT){
+	    numLastBuilds = Integer.parseInt(req.getParameter("numLastBuilds"));
+	}
+	updateFilteredBuilds();
+	    
+	
         Map map = req.getParameterMap();
 	Set<String> keys = map.keySet();
 	for(String key : keys){
-	    /* Check the fields of the form */
+	    /* Check fields of configuration matrix  */
             if (key.startsWith(Definitions.__PREFIX)) {
                 String[] vs = key.split(Definitions.__DELIMITER, 2);
 		try {
@@ -310,12 +339,59 @@ public class ReportPluginProjectAction implements Action{
 	rsp.sendRedirect("../" + Definitions.__URL_NAME);
     }
 
-    public void setNumLastBuilds(int i){
-	this.numLastBuilds = i;
+    /*
+     * Updates private list <code>builds</code> used for populating dataSetBuilder 
+     * according to buildFilteringMethod. 
+     */
+    public void updateFilteredBuilds(){
+	builds.clear();
+	switch(buildFilteringMethod){
+	    case ALL:
+		for (AbstractBuild<?, ?> build = project.getLastBuild();
+			build != null; build = build.getPreviousBuild()){
+		    builds.add(build);
+		}
+		break;
+	    case RECENT:
+		AbstractBuild<?, ?> build = project.getLastBuild();
+		for (int i=0; i < numLastBuilds; i++ ){
+			build = build.getPreviousBuild();
+		    builds.add(build);
+		}
+		break;
+	    case INTERVAL:
+		break;
+	}
     }
     
-    public int getNumLastBuilds(){
+    public int setBuildsRecentNumber(){
 	return this.numLastBuilds;
     }
+    
+    public int getBuildsRecentNumber(){
+	return this.numLastBuilds;
+    }
+    
+    public boolean getBuildsAllChecked(){
+	if(buildFilteringMethod == BuildFilteringMethod.ALL) {
+	    return true;
+	}
+	return false;
+    }
+    
+    public boolean getBuildsRecentChecked(){
+	if(buildFilteringMethod == BuildFilteringMethod.RECENT) {
+	    return true;
+	}
+	return false;
+    }
+    
+    public boolean getBuildsIntervalChecked(){
+	if(buildFilteringMethod == BuildFilteringMethod.INTERVAL) {
+	    return true;
+	}
+	return false;
+    }
+    
     
 }
