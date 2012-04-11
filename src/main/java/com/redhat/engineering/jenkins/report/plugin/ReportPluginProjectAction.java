@@ -92,8 +92,6 @@ public class ReportPluginProjectAction implements Action{
      * Specify whether combination should be checked or not 
      */
     public void setCombinationChecked(Combination combination, boolean val){
-	
-	// FIXME: fix unchenking
 	checkedCombinations.put(combination.toString(), val);
     }
     
@@ -294,7 +292,6 @@ public class ReportPluginProjectAction implements Action{
 	return 200;
     }
     
-    //FIXME: implement
     public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws ServletException,
             IOException, InterruptedException {
 	AbstractProject project = req.findAncestorObject(AbstractProject.class);
@@ -304,17 +301,26 @@ public class ReportPluginProjectAction implements Action{
 	setAllCombinationUnchecked();
 	refresh = true;
 	
+	//FIXME: test
+	
 	/*
 	 * Determine how builds are filtered (all, last N builds, interval)
 	 */
-	buildFilteringMethod = BuildFilteringMethod.valueOf(req.getParameter("buildsFilter"));
-	/*
-	 * If we filter only last N builds, get value of N
-	 */
-	if(buildFilteringMethod == BuildFilteringMethod.RECENT){
-	    numLastBuilds = Integer.parseInt(req.getParameter("numLastBuilds"));
+	BuildFilteringMethod bf= BuildFilteringMethod.valueOf(req.getParameter("buildsFilter"));
+	
+	int n = numLastBuilds;
+	if(bf == BuildFilteringMethod.RECENT){
+	    n = Integer.parseInt(req.getParameter("numLastBuilds"));
 	}
-	updateFilteredBuilds();
+	/*
+	 * If filtering of builds is new or different number of recent builds was
+	 * set, we need to update builds fields
+	 */
+	if(!bf.equals(buildFilteringMethod) || n != numLastBuilds){
+	    buildFilteringMethod = bf;
+	    numLastBuilds = n;
+	    updateFilteredBuilds();
+	}
 	    
 	
         Map map = req.getParameterMap();

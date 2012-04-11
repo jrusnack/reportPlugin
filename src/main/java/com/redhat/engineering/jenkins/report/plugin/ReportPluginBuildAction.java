@@ -56,7 +56,7 @@ public class ReportPluginBuildAction implements Action, Serializable{
 	return Definitions.__URL_NAME;
     }
     
-    //FIXME: implement
+    //FIXME: implement (or move to TestParser ?)
     static TestResults loadResults(AbstractBuild<?, ?> build, PrintStream logger) {
 	
 	FilePath testngDir = ReportPluginPublisher.getReportDir(build);
