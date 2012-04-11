@@ -176,7 +176,7 @@ public class ReportPluginPublisher extends Recorder{
 	     * Add matrix run rResults to parent build`s bResults
 	     */ 
 	    MatrixBuildTestResults bResults = mrun.getParentBuild().getAction(ReportPluginBuildAction.class).getBuildResults();
-	    bResults.addMatrixRunTestResults(mrun, rResults);
+	    bResults.addMatrixRunTestResults(mrun.toString(), mrun.getParent().getCombination(), rResults);
 	    rResults.setParent(bResults);
 	    
 	    

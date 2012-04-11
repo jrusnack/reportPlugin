@@ -6,7 +6,8 @@
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <div id='matrix'>
 
-	<f:form method="post" action="configSubmit" name="custommatrix">
+	<f:form method="post" action="configSubmit" name="reportplugin">
+	    <j:set var="prefix" value="${it.getPrefix()}" />
 	    <j:choose>
 		<!-- Optimized case when there's only one dimension to the axis (or 
 			zero dimension) -->
@@ -51,17 +52,23 @@
 				</j:forEach>
 				<j:forEach var="c" items="${r}">
 				    <td>
-					<j:choose>
-					    <j:forEach var="p" items="${c}">
-						<div>
-						    <!-- <d:invokeBody /> -->
-						    <st:include page="cell.jelly" />
-						</div>
-						<j:if test="${!it.combinationExists(build, p.combination)}">
-						    <j:set var="changed" value="1" />
-						</j:if>
-					    </j:forEach>
-					</j:choose>
+					<j:forEach var="p" items="${c}">
+					    <div>
+						<j:choose>
+						    <j:when test="${it.isCombinationChecked(p.combination)}">
+							<f:checkbox name="${prefix}${p.combination.toString()}" checked="true" value="${b.getResult().ordinal}" />
+						    </j:when>
+						    <j:otherwise>
+							<f:checkbox name="${prefix}${p.combination.toString()}" checked="false" value="${b.getResult().ordinal}" />
+						    </j:otherwise>
+						</j:choose>
+						
+						
+					    </div>
+					    <j:if test="${!it.combinationExists(build, p.combination)}">
+						<j:set var="changed" value="1" />
+					    </j:if>
+					</j:forEach>
 				    </td>
 				</j:forEach>
 			    </tr>
@@ -75,6 +82,8 @@
 		<span style="font-weight:bold;font-size:20px">${%Warning, configuration has changed}</span>
 		<br /><br />
 	    </j:if>
+
+	    <f:submit value="${%Rebuild Report}" />
 
 	</f:form>
     

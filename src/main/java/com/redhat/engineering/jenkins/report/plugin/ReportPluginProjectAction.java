@@ -15,7 +15,10 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import javax.servlet.ServletException;
+import net.sf.json.JSONException;
+import net.sf.json.JSONObject;
 import org.jfree.chart.JFreeChart;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -26,7 +29,10 @@ import org.kohsuke.stapler.StaplerResponse;
  */
 public class ReportPluginProjectAction implements Action{
     private final AbstractProject<?, ?> project;
-
+    private boolean refresh;
+    private Filter filter;
+    // each combination is either checked or unchecked by user or has default value
+    private Map<String, Boolean> checkedCombinations;
     
     /**
 	* Used to figure out if we need to regenerate the graphs or not.
@@ -37,6 +43,8 @@ public class ReportPluginProjectAction implements Action{
     
     public ReportPluginProjectAction(AbstractProject<?, ?> project){
 	this.project = project;
+	this.checkedCombinations = new HashMap<String, Boolean>();
+	refresh = false;
     }
     
     public String getIconFileName() {
@@ -51,8 +59,30 @@ public class ReportPluginProjectAction implements Action{
 	return Definitions.__URL_NAME;
     }
     
+    public String getPrefix() {
+	return Definitions.__PREFIX;
+    }
+    
+    
     public AbstractProject<?, ?> getProject() {	
 	return project;
+    }
+    
+    /**
+     * Specify whether combination should be checked or not 
+     */
+    public void setCombinationChecked(Combination combination, boolean val){
+	checkedCombinations.put(combination.toString(), val);
+    }
+    
+    /**
+     * Returns true when combination was checked by user
+     */
+    public boolean isCombinationChecked(Combination combination){
+	if(this.checkedCombinations.containsKey(combination.toString())){
+	    return this.checkedCombinations.get(combination.toString());		    
+	}
+	return false;
     }
     
     // TODO: optimize
@@ -105,6 +135,12 @@ public class ReportPluginProjectAction implements Action{
 	*/
     private boolean newGraphNotNeeded(final StaplerRequest req,
 	    StaplerResponse rsp) {
+	
+	if(refresh) {
+	    refresh = false;
+	    return false;
+	}
+	
 	Calendar t = getProject().getLastCompletedBuild().getTimestamp();
 	Integer prevNumBuilds = requestMap.get(req.getRequestURI());
 	int numBuilds = getProject().getBuilds().size();
@@ -163,7 +199,7 @@ public class ReportPluginProjectAction implements Action{
 	final DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel> dataSetBuilder =
 		new DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel>();
 
-	populateDataSetBuilder(dataSetBuilder,null);
+	populateDataSetBuilder(dataSetBuilder, filter);
 	new hudson.util.Graph(-1, getGraphWidth(), getGraphHeight()) {
 	    protected JFreeChart createGraph() {
 		return GraphHelper.createChart(req, dataSetBuilder.build());
@@ -194,9 +230,12 @@ public class ReportPluginProjectAction implements Action{
 		    action.addFilter(filter);
 		}
 		
-		dataset.add(action.getPassedTestCount(), "Passed", label);
-		dataset.add(action.getFailedTestCount(), "Failed", label);
-		dataset.add(action.getSkippedTestCount(), "Skipped", label);
+		int a = action.getPassedTestCount();
+		dataset.add(a, "Passed", label);
+		a = action.getFailedTestCount();
+		dataset.add(a, "Failed", label);
+		a = action.getSkippedTestCount();
+		dataset.add(a , "Skipped", label);
 	    } else {
 		//even if report plugin wasn't run with this build,
 		//we should add this build to the graph
@@ -228,7 +267,34 @@ public class ReportPluginProjectAction implements Action{
     //FIXME: implement
     public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws ServletException,
             IOException, InterruptedException {
+	AbstractProject project = req.findAncestorObject(AbstractProject.class);
 	
+	JSONObject formData = req.getSubmittedForm();
+	
+	String uuid = "RP_" + project.getName() + "_" + System.currentTimeMillis();
+	
+	filter = new Filter(uuid);
+	refresh = true;
+        Map map = req.getParameterMap();
+	Set<String> keys = map.keySet();
+	for(String key : keys){
+	    /* Check the fields of the form */
+            if (key.startsWith(Definitions.__PREFIX)) {
+                String[] vs = key.split(Definitions.__DELIMITER, 2);
+		try {
+                    if (vs.length > 1) {
+			Combination c = Combination.fromString(vs[1]);
+			setCombinationChecked(c, true);
+                    	filter.addConfiguration(c, true);
+                    }
+
+                } catch (JSONException e) {
+                    /* No-op, not the field we were looking for. */
+                }
+	    }
+	}
+	
+	rsp.sendRedirect("../" + Definitions.__URL_NAME);
     }
 
 }
