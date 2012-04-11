@@ -1,6 +1,7 @@
 
 package com.redhat.engineering.jenkins.report.plugin;
 
+import com.redhat.engineering.jenkins.testparser.Parser;
 import com.redhat.engineering.jenkins.testparser.results.MatrixBuildTestResults;
 import com.redhat.engineering.jenkins.testparser.results.MatrixRunTestResults;
 import com.redhat.engineering.jenkins.testparser.results.TestResults;
@@ -132,7 +133,7 @@ public class ReportPluginPublisher extends Recorder{
 		+ " using pattern: " + reportLocationPattern);
 	    
 	    
-	FilePath[] paths = locateReports(mrun.getWorkspace(), reportLocationPattern);
+	FilePath[] paths = Parser.locateReports(mrun.getWorkspace(), reportLocationPattern);
 	if (paths.length == 0) {
 	    logger.println("Did not find any matching files.");
 	    //build can still continue
@@ -142,10 +143,10 @@ public class ReportPluginPublisher extends Recorder{
 	/*
 	* filter out the reports based on timestamps. See JENKINS-12187
 	*/
-	paths = checkReports(build, paths, logger);
+	paths = Parser.checkReports(build, paths, logger);
 
 
-	boolean filesSaved = saveReports(getReportDir(mrun), paths, logger);
+	boolean filesSaved = Parser.saveReports(getReportDir(mrun), paths, logger, "test-results");
 	if (!filesSaved) {
 	    logger.println("Failed to save TestNG XML reports");
 	    return true;
@@ -194,75 +195,7 @@ public class ReportPluginPublisher extends Recorder{
 	
 	return true;
     }
-
-
-    /**
-     * Locate test reports under workspace/reportLocationPattern
-     */
-    public static FilePath[] locateReports(FilePath workspace, String reportLocationPattern)
-    throws IOException, InterruptedException{
-	// First use ant-style pattern
-      try {
-         FilePath[] ret = workspace.list(reportLocationPattern);
-         if (ret.length > 0) {
-            return ret;
-         }
-      } catch (Exception e) {}
-
-      // If it fails, do a legacy search
-      List<FilePath> files = new ArrayList<FilePath>();
-      String parts[] = reportLocationPattern.split("\\s*[;:,]+\\s*");
-      for (String path : parts) {
-         FilePath src = workspace.child(path);
-         if (src.exists()) {
-            if (src.isDirectory()) {
-               files.addAll(Arrays.asList(src.list("**/testng*.xml")));
-            } else {
-               files.add(src);
-            }
-         }
-      }
-      return files.toArray(new FilePath[files.size()]);
-    }
     
-    /**
-     * Filter out the reports based on timestamps. Those with timestamp earlier 
-     * than start of build are to be ignored. See JENKINS-12187
-     */
-    public static FilePath[] checkReports(AbstractBuild<?,?> build, FilePath[] paths,
-            PrintStream logger){
-	List<FilePath> filePathList = new ArrayList<FilePath>(paths.length);
-
-	for (FilePath report : paths) {
-	    /*
-	    * Check that the file was created as part of this build and is not
-	    * something left over from before.
-	    *
-	    * Checks that the last modified time of file is greater than the
-	    * start time of the build
-	    *
-	    */
-	    try {
-		/*
-		* dividing by 1000 and comparing because we want to compare secs
-		* and not milliseconds
-		*/
-		if (build.getTimestamp().getTimeInMillis() / 1000 <= report.lastModified() / 1000) {
-		filePathList.add(report);
-		} else {
-		logger.println(report.getName() + " was last modified before "
-			    + "this build started. Ignoring it.");
-		}
-	    } catch (IOException e) {
-		// just log the exception
-		e.printStackTrace(logger);
-	    } catch (InterruptedException e) {
-		// just log the exception
-		e.printStackTrace(logger);
-	    }
-	}
-	return filePathList.toArray(new FilePath[]{});
-    }
     
     /**
     * Gets the directory to store report files
@@ -271,33 +204,7 @@ public class ReportPluginPublisher extends Recorder{
 	return new FilePath(new File(build.getRootDir(), "report-plugin"));
     }
 
-    /**
-     * Save reports to build directory (job is build in workspace, however, next 
-     * build would overwrite files, so we need to save copy of results in persistent
-     * directory)
-     * 
-     * @param reportDir	    Directory where to save reports to
-     * @param paths	    Paths to report files
-     * @param logger
-     * @return		    True for success
-     */
-    public static boolean saveReports(FilePath reportDir, FilePath[] paths, PrintStream logger) {
-	logger.println("Saving reports...");
-	try {
-	    reportDir.mkdirs();
-	    int i = 0;
-	    for (FilePath report : paths) {
-		String name = "test-results" + (i > 0 ? "-" + i : "") + ".xml";
-		i++;
-		FilePath dst = reportDir.child(name);
-		report.copyTo(dst);
-	    }
-	} catch (Exception e) {
-	    e.printStackTrace(logger);
-	    return false;
-	}
-	return true;
-    }
+    
     
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<hudson.tasks.Publisher> {

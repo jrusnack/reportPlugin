@@ -49,7 +49,12 @@ function click2Change( status )
 	<j:set var="build" value="${request.findAncestorObject(buildClass)}" />
 	<j:set var="o" value="${build.layouter}" />
 	
+	
+	<f:form method="post" action="configSubmit" name="reportplugin">
+
 	<st:include page="matrix.jelly"/>
+
+	</f:form>
 
       </l:main-panel>
    </l:layout>

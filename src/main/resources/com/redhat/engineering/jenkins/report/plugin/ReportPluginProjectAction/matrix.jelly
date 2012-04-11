@@ -6,7 +6,6 @@
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <div id='matrix'>
 
-	<f:form method="post" action="configSubmit" name="reportplugin">
 	    <j:set var="prefix" value="${it.getPrefix()}" />
 	    <j:choose>
 		<!-- Optimized case when there's only one dimension to the axis (or 
@@ -90,7 +89,6 @@
 	    <br/>
 	    <f:submit value="${%Rebuild Report}" />
 
-	</f:form>
     
     </div>
     

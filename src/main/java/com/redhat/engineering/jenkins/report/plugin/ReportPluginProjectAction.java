@@ -28,6 +28,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author Jan Rusnacko (jrusnack at redhat.com)
  */
 public class ReportPluginProjectAction implements Action{
+    private int numLastBuilds;
     private final AbstractProject<?, ?> project;
     private boolean refresh;
     private Filter filter;
@@ -72,6 +73,8 @@ public class ReportPluginProjectAction implements Action{
      * Specify whether combination should be checked or not 
      */
     public void setCombinationChecked(Combination combination, boolean val){
+	
+	// FIXME: fix unchenking
 	checkedCombinations.put(combination.toString(), val);
     }
     
@@ -297,4 +300,12 @@ public class ReportPluginProjectAction implements Action{
 	rsp.sendRedirect("../" + Definitions.__URL_NAME);
     }
 
+    public void setNumLastBuilds(int i){
+	this.numLastBuilds = i;
+    }
+    
+    public int getNumLastBuilds(){
+	return this.numLastBuilds;
+    }
+    
 }
