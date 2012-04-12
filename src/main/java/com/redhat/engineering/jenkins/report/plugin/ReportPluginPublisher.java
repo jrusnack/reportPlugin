@@ -31,6 +31,7 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class ReportPluginPublisher extends Recorder{
     public final String reportLocationPattern;
+    private ReportPluginProjectAction projectAction;
 
     
    /**
@@ -39,7 +40,6 @@ public class ReportPluginPublisher extends Recorder{
     @DataBoundConstructor
     public ReportPluginPublisher(String reportLocationPattern){
 	this.reportLocationPattern = reportLocationPattern;
-	
     }
     
     /**
@@ -50,7 +50,8 @@ public class ReportPluginPublisher extends Recorder{
     public Collection<? extends Action> getProjectActions(AbstractProject<?,?> project){
 	Collection<Action> actions = new ArrayList<Action>();
 	if(reportLocationPattern != null){
-	    actions.add(new ReportPluginProjectAction(project));
+	    projectAction = new ReportPluginProjectAction(project);
+	    actions.add(projectAction);
 	}
 	return actions;
     }
@@ -91,7 +92,7 @@ public class ReportPluginPublisher extends Recorder{
 		 */
 		MatrixBuildTestResults bResults = new MatrixBuildTestResults(UUID.randomUUID().toString());
 		ReportPluginBuildAction action = new 
-			ReportPluginBuildAction(mbuild, bResults);
+			ReportPluginBuildAction(mbuild, bResults, projectAction);
 		mrun.getParentBuild().getActions().add(action);
 	    }
 	    return true;

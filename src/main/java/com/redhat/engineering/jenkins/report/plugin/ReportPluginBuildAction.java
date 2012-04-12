@@ -16,6 +16,7 @@ import hudson.model.Action;
 import hudson.tasks.Publisher;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.util.UUID;
 
 /**
  *
@@ -24,19 +25,15 @@ import java.io.Serializable;
 public class ReportPluginBuildAction implements Action, Serializable{
     MatrixBuildTestResults results;
     AbstractBuild<?, ?> build;
+    ReportPluginProjectAction project;
     
     
-    public ReportPluginBuildAction(AbstractBuild<?, ?> build, MatrixBuildTestResults results){
+    public ReportPluginBuildAction(AbstractBuild<?, ?> build, 
+	    MatrixBuildTestResults results, ReportPluginProjectAction project){
 	this.results = results;
 	this.build = build;
+	this.project = project;	
 	results.setOwner(this.build);
-	
-	/* TODO: speed up by caching, this would work but we need to update 
-	 * these fields every time we add MatrixRunTestResults to MatrixBuildTestResults
-	 * results
-	 * Example:
-	 * this.passedTestCount = results.getPassedTestCount();
-	 */
     }
     
 
@@ -70,12 +67,12 @@ public class ReportPluginBuildAction implements Action, Serializable{
 	TestResults tr = null;
 	if (paths == null) {
 	    if(build instanceof MatrixRun){
-		tr = new MatrixRunTestResults("");
+		tr = new MatrixRunTestResults(UUID.randomUUID().toString());
 		tr.setOwner(build);
 		return tr;
 	    } else {
 		// TODO: [freestyle]
-		tr = new MatrixRunTestResults("");
+		tr = new MatrixRunTestResults(UUID.randomUUID().toString());
 		tr.setOwner(build);
 		return tr;
 		

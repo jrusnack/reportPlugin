@@ -32,10 +32,10 @@ public class ReportPluginProjectAction implements Action{
     private Map<String, Boolean> checkedCombinations;
     
     /**
-	* Used to figure out if we need to regenerate the graphs or not.
-	* Only used in newGraphNotNeeded() method. Key is the request URI and value
-	* is the number of builds for the project.
-	*/
+    * Used to figure out if we need to regenerate the graphs or not.
+    * Only used in newGraphNotNeeded() method. Key is the request URI and value
+    * is the number of builds for the project.
+    */
     private transient Map<String, Integer> requestMap = new HashMap<String, Integer>();
     
     // indicates how should builds be filtered
@@ -61,10 +61,6 @@ public class ReportPluginProjectAction implements Action{
 	 */
 	builds = new ArrayList<AbstractBuild<?, ?>>();
 	buildFilteringMethod = BuildFilteringMethod.ALL;
-	for (AbstractBuild<?, ?> build = project.getLastBuild();
-		build != null; build = build.getPreviousBuild()){
-	    builds.add(build);
-	}
     }
     
     public String getIconFileName() {
@@ -114,18 +110,16 @@ public class ReportPluginProjectAction implements Action{
 	return false;
     }
     
-    // TODO: optimize
+    
     public boolean combinationExists( AbstractProject ap, Combination c){
 	if(ap instanceof MatrixProject){
 	    MatrixProject mp = (MatrixProject) ap;
 	    MatrixConfiguration mc = mp.getItem(c);
 	    
 	    /* Verify matrix configuration */
-	    if( mc == null || !mc.isActiveConfiguration()) {
-		return false;
+	    if( mc != null || mc.isActiveConfiguration()) {
+		return true;
 	    }
-	    
-	    return true;
 	}	
 	return false;	
     }
@@ -165,6 +159,9 @@ public class ReportPluginProjectAction implements Action{
     private boolean newGraphNotNeeded(final StaplerRequest req,
 	    StaplerResponse rsp) {
 	
+	/**
+	 * If refresh is scheduled, then rebuild graph
+	 */
 	if(refresh) {
 	    refresh = false;
 	    return false;
@@ -247,6 +244,7 @@ public class ReportPluginProjectAction implements Action{
     protected void populateDataSetBuilder(DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel> dataset,
 	    Filter filter) {
 
+	updateFilteredBuilds();
 	for (AbstractBuild<?, ?> build : builds) 
 	{
 	    ChartUtil.NumberOnlyBuildLabel label = new ChartUtil.NumberOnlyBuildLabel(build);
