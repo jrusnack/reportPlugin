@@ -9,8 +9,10 @@ import hudson.matrix.MatrixProject;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.Run;
 import hudson.util.ChartUtil;
 import hudson.util.DataSetBuilder;
+import hudson.util.RunList;
 import java.io.IOException;
 import java.util.*;
 import javax.servlet.ServletException;
@@ -46,6 +48,10 @@ public class ReportPluginProjectAction implements Action{
     
     // stores builds to be used
     private List<AbstractBuild<?, ?>> builds;
+    private long firstSelBuildParam;
+    private long lastSelBuildParam;
+    private long firstSelBuildTimestamp;
+    private long lastSelBuildTimestamp;
     
     enum BuildFilteringMethod {
 	ALL, RECENT, INTERVAL
@@ -61,6 +67,9 @@ public class ReportPluginProjectAction implements Action{
 	 */
 	builds = new ArrayList<AbstractBuild<?, ?>>();
 	buildFilteringMethod = BuildFilteringMethod.ALL;
+//	RunList tmp = project.getBuilds().byTimestamp(firstSelBuildParam, lastSelBuildParam);
+//	firstSelBuildParam = tmp.getFirstBuild();
+//	lastSelBuildParam = tmp.getLastBuild();
     }
     
     public String getIconFileName() {
@@ -101,13 +110,13 @@ public class ReportPluginProjectAction implements Action{
     }
     
     /**
-     * Returns true when combination was checked by user
+     * Returns false when combination was unchecked by user
      */
     public boolean isCombinationChecked(Combination combination){
 	if(this.checkedCombinations.containsKey(combination.toString())){
 	    return this.checkedCombinations.get(combination.toString());		    
 	}
-	return false;
+	return true;
     }
     
     
@@ -315,6 +324,29 @@ public class ReportPluginProjectAction implements Action{
 	if(bf == BuildFilteringMethod.RECENT){
 	    n = Integer.parseInt(req.getParameter("numLastBuilds"));
 	}
+	if(bf == buildFilteringMethod.INTERVAL){
+	    
+	    /*
+	     * Get timestamps of first and last build
+	     */
+	    firstSelBuildTimestamp = Long.parseLong(req.getParameter("firstBuild"));
+	    lastSelBuildTimestamp = Long.parseLong(req.getParameter("lastBuild"));
+	    
+	    /*
+	     * Swap when user entered invalid range
+	     */
+	    if(firstSelBuildTimestamp > lastSelBuildTimestamp){
+		long tmp = firstSelBuildTimestamp;
+		firstSelBuildTimestamp= lastSelBuildTimestamp;
+		lastSelBuildTimestamp = tmp;
+	    }
+	    
+	    /*
+	     * make selection inclusive
+	     */
+	    firstSelBuildParam = firstSelBuildTimestamp -1;
+	    lastSelBuildParam = lastSelBuildTimestamp +1;
+	}
 	
 	/*
 	 * If filtering of builds is new or different number of recent builds was
@@ -365,12 +397,14 @@ public class ReportPluginProjectAction implements Action{
 	    case RECENT:
 		AbstractBuild<?, ?> build = project.getLastBuild();
 		for (int i=0; i < numLastBuilds; i++ ){
-		    build = build.getPreviousBuild();
-		    if(build == null) break;
 		    builds.add(build);
+		    build = build.getPreviousBuild();
+		    if(build == null) break;		   
 		}
 		break;
 	    case INTERVAL:
+		// FIXME: test
+		builds = (List<AbstractBuild<?, ?>>) project.getBuilds().byTimestamp(firstSelBuildParam, lastSelBuildParam);
 		break;
 	}
     }
@@ -404,5 +438,23 @@ public class ReportPluginProjectAction implements Action{
 	return false;
     }
     
+    /**
+     * Used for drop-down list in selection of builds to be filtered 
+     * 
+     * @return list of all builds for this project
+     */
+    public RunList<?> getAllBuilds(){
+	return project.getBuilds();
+    }
+    
+    public long getFirstSelBuildTimestamp() {
+        return firstSelBuildTimestamp;
+    }
+    
+    
+    public long getLastSelBuildTimestamp() {
+        return lastSelBuildTimestamp;
+    }
+
     
 }

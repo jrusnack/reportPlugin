@@ -1,5 +1,5 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
-         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
    <l:layout title="TestNG Results Trend">
       <st:include it="${it.project}" page="sidepanel.jelly"/>
       <l:main-panel>
@@ -51,11 +51,54 @@ function click2Change( status )
 	
 	
 	<f:form method="post" action="configSubmit" name="reportplugin">
-	    <f:radio name="buildsFilter" value="ALL" checked="${it.buildsAllChecked}"/>All builds<br />
-	    <f:radio name="buildsFilter" value="RECENT" checked="${it.buildsRecentChecked}"/>Number of recent builds: 
+	    <h2>${%Select builds}</h2>
+	    <f:radio name="buildsFilter" value="ALL" checked="${it.buildsAllChecked}"/>${%All builds}<br />
+	    <f:radio name="buildsFilter" value="RECENT" checked="${it.buildsRecentChecked}"/>${%Number of recent builds:} 
 		<f:textbox name="numLastBuilds" clazz="positive-number" style="width: 50px" value="${it.buildsRecentNumber}" /><br />
-	    <f:radio name="buildsFilter" value="INTERVAL" checked="${it.buildsIntervalChecked}" /><br />
+	    <f:radio name="buildsFilter" value="INTERVAL" checked="${it.buildsIntervalChecked}" />${%Between two builds:}
+		
+		<select name="firstBuild">
+		    <j:forEach var="b" items="${it.allBuilds}">
+			<j:choose>
+			    <j:when test="${b.timeInMillis == it.firstSelBuildTimestamp}">
+				<option value="${b.timeInMillis}" selected="true" >
+				    ${b.displayName} 
+				    <i:formatDate value="${b.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>
+				</option>
+			    </j:when>
+			    <j:otherwise>
+				<option value="${b.timeInMillis}" >
+				    ${b.displayName} 
+				    <i:formatDate value="${b.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>
+				</option>
+			    </j:otherwise>
+			</j:choose>
+		    </j:forEach>
+		</select>
+		
+		<select name="lastBuild">
+		    <j:forEach var="b" items="${it.allBuilds}">
+			<j:choose>
+			    <j:when test="${b.timeInMillis == it.lastSelBuildTimestamp}">
+				<option value="${b.timeInMillis}" selected="true" >
+				    ${b.displayName} 
+				    <i:formatDate value="${b.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>
+				</option>
+			    </j:when>
+			    <j:otherwise>
+				<option value="${b.timeInMillis}">
+				    ${b.displayName} 
+				    <i:formatDate value="${b.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>
+				</option>
+			    </j:otherwise>
+			</j:choose>
+		    </j:forEach>
+		</select>
+		<br />
+
+	    <h2>${%Select configurations}</h2>
 	    <st:include page="matrix.jelly"/>
+	    <br />
 	    <f:submit value="${%Rebuild Report}" />
 	</f:form>
 
