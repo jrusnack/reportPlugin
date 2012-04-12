@@ -41,7 +41,7 @@ public class ReportPluginBuildActionTest {
     @Test(expected = IllegalArgumentException.class)
     public void testReportPluginBuildAction(){
 	MatrixBuildTestResults tr = new MatrixBuildTestResults(null);
-	ReportPluginBuildAction a = new ReportPluginBuildAction(null, tr);
+	ReportPluginBuildAction a = new ReportPluginBuildAction(null, tr, null);
     }
     
     

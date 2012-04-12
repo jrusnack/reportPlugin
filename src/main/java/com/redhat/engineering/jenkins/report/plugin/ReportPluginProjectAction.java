@@ -251,7 +251,7 @@ public class ReportPluginProjectAction implements Action{
 	    ReportPluginBuildAction action = build.getAction(ReportPluginBuildAction.class);
 	    
 	    if (action != null) {
-		// TODO: optimize
+		
 		if(filter != null){
 		    action.addFilter(filter);
 		}
@@ -262,6 +262,11 @@ public class ReportPluginProjectAction implements Action{
 		dataset.add(a, "Failed", label);
 		a = action.getSkippedTestCount();
 		dataset.add(a , "Skipped", label);
+		
+		if(filter != null){
+		    action.removeFilter();
+		}
+		
 	    } else {
 		//even if report plugin wasn't run with this build,
 		//we should add this build to the graph
@@ -310,6 +315,7 @@ public class ReportPluginProjectAction implements Action{
 	if(bf == BuildFilteringMethod.RECENT){
 	    n = Integer.parseInt(req.getParameter("numLastBuilds"));
 	}
+	
 	/*
 	 * If filtering of builds is new or different number of recent builds was
 	 * set, we need to update builds fields
@@ -359,7 +365,8 @@ public class ReportPluginProjectAction implements Action{
 	    case RECENT:
 		AbstractBuild<?, ?> build = project.getLastBuild();
 		for (int i=0; i < numLastBuilds; i++ ){
-			build = build.getPreviousBuild();
+		    build = build.getPreviousBuild();
+		    if(build == null) break;
 		    builds.add(build);
 		}
 		break;
