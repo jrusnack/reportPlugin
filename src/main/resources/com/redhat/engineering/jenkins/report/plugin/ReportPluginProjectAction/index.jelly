@@ -97,10 +97,12 @@ function click2Change( status )
 		<br />
 
 		<h2>${%Select configurations}</h2>
-		<f:radio name="confFilter" value="COMBINATIONFILTER" checked="${it.combinationFilterChecked}"/>${%Combination Filter:}<br />
+		<f:radio name="confFilter" value="COMBINATIONFILTER" checked="${it.combinationFilterChecked}"/>${%Combination Filter:}
+		    <f:textbox name="combinationFilter" style="width: 400px" value="${it.combinationFilter}" />
+		    <br />
 		<f:radio name="confFilter" value="MATRIX" checked="${it.matrixChecked}"/>${%Configuration matrix:}
-		<st:include page="matrix.jelly"/>
-		<br />
+		    <st:include page="matrix.jelly"/>
+		    <br />
 	    <f:submit value="${%Rebuild Report}" />
 	</f:form>
 
