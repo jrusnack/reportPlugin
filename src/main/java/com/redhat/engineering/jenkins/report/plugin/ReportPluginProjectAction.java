@@ -341,6 +341,7 @@ public class ReportPluginProjectAction implements Action{
 	if(bf == BuildFilteringMethod.RECENT){
 	    n = Integer.parseInt(req.getParameter("numLastBuilds"));
 	}
+	
 	if(bf == buildFilteringMethod.INTERVAL){
 	    
 	    /*
@@ -371,7 +372,7 @@ public class ReportPluginProjectAction implements Action{
 	 */
 	if(!bf.equals(buildFilteringMethod) || n != numLastBuilds){
 	    buildFilteringMethod = bf;
-	    numLastBuilds = n;
+	    numLastBuilds = n > 1 ? n : 2;
 	    updateFilteredBuilds();
 	}
 	    
