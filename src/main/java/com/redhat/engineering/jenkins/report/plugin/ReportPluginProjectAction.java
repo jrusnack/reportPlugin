@@ -3,6 +3,8 @@ package com.redhat.engineering.jenkins.report.plugin;
 
 import com.redhat.engineering.jenkins.report.plugin.util.GraphHelper;
 import com.redhat.engineering.jenkins.testparser.results.Filter;
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
 import hudson.matrix.Combination;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixConfiguration;
@@ -44,6 +46,9 @@ public class ReportPluginProjectAction implements Action{
     // indicates how should builds be filtered
     private BuildFilteringMethod buildFilteringMethod;
     
+    // indicates how should configurations be filtered
+    private ConfigurationFilteringMethod confFilteringMethod;
+    
     // stores value when buildFilteringMethod is RECENT
     private int numLastBuilds;
     
@@ -58,6 +63,10 @@ public class ReportPluginProjectAction implements Action{
 	ALL, RECENT, INTERVAL
     }
     
+    enum ConfigurationFilteringMethod{
+	MATRIX, COMBINATIONFILTER
+    }
+    
     
     public ReportPluginProjectAction(MatrixProject project){
 	this.project = project;
@@ -68,9 +77,8 @@ public class ReportPluginProjectAction implements Action{
 	 */
 	builds = new RunList<MatrixBuild>();
 	buildFilteringMethod = BuildFilteringMethod.ALL;
-//	RunList tmp = project.getBuilds().byTimestamp(firstSelBuildParam, lastSelBuildParam);
-//	firstSelBuildParam = tmp.getFirstBuild();
-//	lastSelBuildParam = tmp.getLastBuild();
+	confFilteringMethod = ConfigurationFilteringMethod.MATRIX;
+	
     }
     
     public String getIconFileName() {
@@ -323,14 +331,12 @@ public class ReportPluginProjectAction implements Action{
     
     public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws ServletException,
             IOException, InterruptedException {
-	AbstractProject project = req.findAncestorObject(AbstractProject.class);
 	
-	String uuid = "RP_" + project.getName() + "_" + System.currentTimeMillis();
-	filter = new Filter(uuid);
+	String uuid = "RP_" + this.project.getName() + "_" + System.currentTimeMillis();
+	filter = new Filter(uuid, this.project.getAxes());
 	setAllCombinationUnchecked();
 	refresh = true;
 	
-	//FIXME: test
 	
 	/*
 	 * Determine how builds are filtered (all, last N builds, interval)
@@ -386,7 +392,7 @@ public class ReportPluginProjectAction implements Action{
                     if (vs.length > 1) {
 			Combination c = Combination.fromString(vs[1]);
 			setCombinationChecked(c, true);
-                    	filter.addConfiguration(c, true);
+                    	filter.setConfiguration(c, true);
                     }
 
                 } catch (JSONException e) {
@@ -450,6 +456,20 @@ public class ReportPluginProjectAction implements Action{
     
     public boolean getBuildsIntervalChecked(){
 	if(buildFilteringMethod == BuildFilteringMethod.INTERVAL) {
+	    return true;
+	}
+	return false;
+    }
+    
+    public boolean getMatrixChecked(){
+	if(confFilteringMethod == ConfigurationFilteringMethod.MATRIX){
+	    return true;
+	}
+	return false;
+    }
+    
+    public boolean getCombinationFilterChecked(){
+	if(confFilteringMethod == ConfigurationFilteringMethod.COMBINATIONFILTER){
 	    return true;
 	}
 	return false;
