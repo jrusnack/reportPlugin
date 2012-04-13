@@ -49,8 +49,8 @@ public class ReportPluginPublisher extends Recorder{
     @Override
     public Collection<? extends Action> getProjectActions(AbstractProject<?,?> project){
 	Collection<Action> actions = new ArrayList<Action>();
-	if(reportLocationPattern != null){
-	    projectAction = new ReportPluginProjectAction(project);
+	if(reportLocationPattern != null && project instanceof MatrixProject){
+	    projectAction = new ReportPluginProjectAction((MatrixProject)project);
 	    actions.add(projectAction);
 	}
 	return actions;

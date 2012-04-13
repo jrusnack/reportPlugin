@@ -4,6 +4,7 @@ package com.redhat.engineering.jenkins.report.plugin;
 import com.redhat.engineering.jenkins.report.plugin.util.GraphHelper;
 import com.redhat.engineering.jenkins.testparser.results.Filter;
 import hudson.matrix.Combination;
+import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.MatrixProject;
 import hudson.model.AbstractBuild;
@@ -27,7 +28,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author Jan Rusnacko (jrusnack at redhat.com)
  */
 public class ReportPluginProjectAction implements Action{
-    private final AbstractProject<?, ?> project;
+    private final MatrixProject project;
     private boolean refresh;
     private Filter filter;
     // each combination is either checked or unchecked by user or has default value
@@ -47,25 +48,25 @@ public class ReportPluginProjectAction implements Action{
     private int numLastBuilds;
     
     // stores builds to be used
-    private List<AbstractBuild<?, ?>> builds;
     private long firstSelBuildParam;
     private long lastSelBuildParam;
     private long firstSelBuildTimestamp;
     private long lastSelBuildTimestamp;
+    private RunList<MatrixBuild> builds;
     
     enum BuildFilteringMethod {
 	ALL, RECENT, INTERVAL
     }
     
     
-    public ReportPluginProjectAction(AbstractProject<?, ?> project){
+    public ReportPluginProjectAction(MatrixProject project){
 	this.project = project;
 	this.checkedCombinations = new HashMap<String, Boolean>();
 	refresh = false;
 	/*
 	 * Add all builds by default
 	 */
-	builds = new ArrayList<AbstractBuild<?, ?>>();
+	builds = new RunList<MatrixBuild>();
 	buildFilteringMethod = BuildFilteringMethod.ALL;
 //	RunList tmp = project.getBuilds().byTimestamp(firstSelBuildParam, lastSelBuildParam);
 //	firstSelBuildParam = tmp.getFirstBuild();
@@ -104,8 +105,24 @@ public class ReportPluginProjectAction implements Action{
      * Set all currently known combinations to unchecked state
      */
     public void setAllCombinationUnchecked(){
-	for (String comb: checkedCombinations.keySet()){
-	    checkedCombinations.put(comb, false);
+	/**
+	 * Check if all project combinations are already in <code>checkedCombinations</code>
+	 * if not, add them - otherwise if in the first use of report plugin we 
+	 * uncheck any field, it will default to checked since checkedCombinations
+	 * won`t say otherwise
+	 */
+	if(project.getActiveConfigurations().size() != checkedCombinations.size()){
+	    checkedCombinations.clear();
+	    Iterator<MatrixConfiguration> i = project.getActiveConfigurations().iterator();
+	    while(i.hasNext()){
+		checkedCombinations.put(i.next().getCombination().toString(), false);
+	    } 
+	    
+	}else{
+	    
+	    for (String comb: checkedCombinations.keySet()){
+		checkedCombinations.put(comb, false);
+	    }
 	}
     }
     
@@ -389,13 +406,13 @@ public class ReportPluginProjectAction implements Action{
 	builds.clear();
 	switch(buildFilteringMethod){
 	    case ALL:
-		for (AbstractBuild<?, ?> build = project.getLastBuild();
+		for (MatrixBuild build = project.getLastBuild();
 			build != null; build = build.getPreviousBuild()){
 		    builds.add(build);
 		}
 		break;
 	    case RECENT:
-		AbstractBuild<?, ?> build = project.getLastBuild();
+		MatrixBuild build = project.getLastBuild();
 		for (int i=0; i < numLastBuilds; i++ ){
 		    builds.add(build);
 		    build = build.getPreviousBuild();
@@ -404,7 +421,7 @@ public class ReportPluginProjectAction implements Action{
 		break;
 	    case INTERVAL:
 		// FIXME: test
-		builds = (List<AbstractBuild<?, ?>>) project.getBuilds().byTimestamp(firstSelBuildParam, lastSelBuildParam);
+		builds = (RunList<MatrixBuild>) project.getBuilds().byTimestamp(firstSelBuildParam, lastSelBuildParam);
 		break;
 	}
     }
