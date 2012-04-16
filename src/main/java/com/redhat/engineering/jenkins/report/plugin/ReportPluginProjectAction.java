@@ -3,6 +3,8 @@ package com.redhat.engineering.jenkins.report.plugin;
 
 import com.redhat.engineering.jenkins.report.plugin.util.GraphHelper;
 import com.redhat.engineering.jenkins.testparser.results.Filter;
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
 import hudson.matrix.Combination;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixConfiguration;
@@ -31,6 +33,7 @@ public class ReportPluginProjectAction implements Action{
     private final MatrixProject project;
     private boolean refresh;
     private Filter filter;
+    private String combinationFilter;
     // each combination is either checked or unchecked by user or has default value
     private Map<String, Boolean> checkedCombinations;
     
@@ -43,6 +46,9 @@ public class ReportPluginProjectAction implements Action{
     
     // indicates how should builds be filtered
     private BuildFilteringMethod buildFilteringMethod;
+    
+    // indicates how should configurations be filtered
+    private ConfigurationFilteringMethod confFilteringMethod;
     
     // stores value when buildFilteringMethod is RECENT
     private int numLastBuilds;
@@ -58,6 +64,10 @@ public class ReportPluginProjectAction implements Action{
 	ALL, RECENT, INTERVAL
     }
     
+    enum ConfigurationFilteringMethod{
+	MATRIX, COMBINATIONFILTER
+    }
+    
     
     public ReportPluginProjectAction(MatrixProject project){
 	this.project = project;
@@ -68,9 +78,8 @@ public class ReportPluginProjectAction implements Action{
 	 */
 	builds = new RunList<MatrixBuild>();
 	buildFilteringMethod = BuildFilteringMethod.ALL;
-//	RunList tmp = project.getBuilds().byTimestamp(firstSelBuildParam, lastSelBuildParam);
-//	firstSelBuildParam = tmp.getFirstBuild();
-//	lastSelBuildParam = tmp.getLastBuild();
+	confFilteringMethod = ConfigurationFilteringMethod.COMBINATIONFILTER;
+	combinationFilter = "";
     }
     
     public String getIconFileName() {
@@ -323,14 +332,14 @@ public class ReportPluginProjectAction implements Action{
     
     public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws ServletException,
             IOException, InterruptedException {
-	AbstractProject project = req.findAncestorObject(AbstractProject.class);
 	
-	String uuid = "RP_" + project.getName() + "_" + System.currentTimeMillis();
-	filter = new Filter(uuid);
-	setAllCombinationUnchecked();
+	
+	String uuid = "RP_" + this.project.getName() + "_" + System.currentTimeMillis();
+	filter = new Filter(uuid, this.project.getAxes());
+	
+	// refresh page afterwards
 	refresh = true;
 	
-	//FIXME: test
 	
 	/*
 	 * Determine how builds are filtered (all, last N builds, interval)
@@ -376,25 +385,41 @@ public class ReportPluginProjectAction implements Action{
 	    updateFilteredBuilds();
 	}
 	    
-	
-        Map map = req.getParameterMap();
-	Set<String> keys = map.keySet();
-	for(String key : keys){
-	    /* Check fields of configuration matrix  */
-            if (key.startsWith(Definitions.__PREFIX)) {
-                String[] vs = key.split(Definitions.__DELIMITER, 2);
-		try {
-                    if (vs.length > 1) {
-			Combination c = Combination.fromString(vs[1]);
-			setCombinationChecked(c, true);
-                    	filter.addConfiguration(c, true);
-                    }
+	/*
+	 * Determine how configurations are filtered 
+	 */
+	confFilteringMethod = ConfigurationFilteringMethod.valueOf(req.getParameter("confFilter"));
+	if(confFilteringMethod == ConfigurationFilteringMethod.COMBINATIONFILTER){
+	    
+	    combinationFilter = req.getParameter("combinationFilter");
+	    filter.addCombinationFilter(combinationFilter);
+	    
+	} else {
+	    
+	    // reset all checkboxes
+	    setAllCombinationUnchecked();
+	    filter.removeCombinationFilter();
+	    
+	    Map map = req.getParameterMap();
+	    Set<String> keys = map.keySet();
+	    for(String key : keys){
+		/* Check fields of configuration matrix  */
+		if (key.startsWith(Definitions.__PREFIX)) {
+		    String[] vs = key.split(Definitions.__DELIMITER, 2);
+		    try {
+			if (vs.length > 1) {
+			    Combination c = Combination.fromString(vs[1]);
+			    setCombinationChecked(c, true);
+			    filter.setConfiguration(c, true);
+			}
 
-                } catch (JSONException e) {
-                    /* No-op, not the field we were looking for. */
-                }
+		    } catch (JSONException e) {
+			/* No-op, not the field we were looking for. */
+		    }
+		}
 	    }
-	}
+	} 
+	    
 	
 	rsp.sendRedirect("../" + Definitions.__URL_NAME);
     }
@@ -456,6 +481,20 @@ public class ReportPluginProjectAction implements Action{
 	return false;
     }
     
+    public boolean getMatrixChecked(){
+	if(confFilteringMethod == ConfigurationFilteringMethod.MATRIX){
+	    return true;
+	}
+	return false;
+    }
+    
+    public boolean getCombinationFilterChecked(){
+	if(confFilteringMethod == ConfigurationFilteringMethod.COMBINATIONFILTER){
+	    return true;
+	}
+	return false;
+    }
+    
     /**
      * Used for drop-down list in selection of builds to be filtered 
      * 
@@ -472,6 +511,10 @@ public class ReportPluginProjectAction implements Action{
     
     public long getLastSelBuildTimestamp() {
         return lastSelBuildTimestamp;
+    }
+    
+    public String getCombinationFilter(){
+	return combinationFilter;
     }
 
     
