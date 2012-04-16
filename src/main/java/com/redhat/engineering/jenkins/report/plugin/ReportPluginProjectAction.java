@@ -3,7 +3,6 @@ package com.redhat.engineering.jenkins.report.plugin;
 
 import com.redhat.engineering.jenkins.report.plugin.util.GraphHelper;
 import com.redhat.engineering.jenkins.testparser.results.Filter;
-import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import hudson.matrix.Combination;
 import hudson.matrix.MatrixBuild;
@@ -12,7 +11,6 @@ import hudson.matrix.MatrixProject;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
-import hudson.model.Run;
 import hudson.util.ChartUtil;
 import hudson.util.DataSetBuilder;
 import hudson.util.RunList;
@@ -20,7 +18,6 @@ import java.io.IOException;
 import java.util.*;
 import javax.servlet.ServletException;
 import net.sf.json.JSONException;
-import net.sf.json.JSONObject;
 import org.jfree.chart.JFreeChart;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -82,6 +79,7 @@ public class ReportPluginProjectAction implements Action{
 	combinationFilter = "";
 	String uuid = "RP_" + this.project.getName() + "_" + System.currentTimeMillis();
 	filter = new Filter(uuid, this.project.getAxes());
+	numLastBuilds = project.getBuilds().size();
     }
     
     public String getIconFileName() {
@@ -311,7 +309,9 @@ public class ReportPluginProjectAction implements Action{
 	
 	int n = numLastBuilds;
 	if(bf == BuildFilteringMethod.RECENT){
+	    int numProjBuilds = project.getBuilds().size();
 	    n = Integer.parseInt(req.getParameter("numLastBuilds"));
+	    n = n > numProjBuilds ? numProjBuilds : n; 
 	}
 	
 	if(bf == buildFilteringMethod.INTERVAL){
@@ -413,9 +413,6 @@ public class ReportPluginProjectAction implements Action{
 	}
     }
     
-    public int setBuildsRecentNumber(){
-	return this.numLastBuilds;
-    }
     
     public int getBuildsRecentNumber(){
 	return this.numLastBuilds;

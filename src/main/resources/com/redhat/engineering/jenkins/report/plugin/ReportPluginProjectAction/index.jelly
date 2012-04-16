@@ -51,59 +51,71 @@ function click2Change( status )
 	
 	
 	<f:form method="post" action="configSubmit" name="reportplugin">
-	    <h2>${%Select builds}</h2>
-	    <f:radio name="buildsFilter" value="ALL" checked="${it.buildsAllChecked}"/>${%All builds}<br />
-	    <f:radio name="buildsFilter" value="RECENT" checked="${it.buildsRecentChecked}"/>${%Number of recent builds:} 
-		<f:textbox name="numLastBuilds" clazz="positive-number" style="width: 50px" value="${it.buildsRecentNumber}" /><br />
-	    <f:radio name="buildsFilter" value="INTERVAL" checked="${it.buildsIntervalChecked}" />${%Between two builds:}
-		
-		<select name="firstBuild">
-		    <j:forEach var="b" items="${it.allBuilds}">
-			<j:choose>
-			    <j:when test="${b.timeInMillis == it.firstSelBuildTimestamp}">
-				<option value="${b.timeInMillis}" selected="true" >
-				    ${b.displayName} 
-				    <i:formatDate value="${b.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>
-				</option>
-			    </j:when>
-			    <j:otherwise>
-				<option value="${b.timeInMillis}" >
-				    ${b.displayName} 
-				    <i:formatDate value="${b.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>
-				</option>
-			    </j:otherwise>
-			</j:choose>
-		    </j:forEach>
-		</select>
-		
-		<select name="lastBuild">
-		    <j:forEach var="b" items="${it.allBuilds}">
-			<j:choose>
-			    <j:when test="${b.timeInMillis == it.lastSelBuildTimestamp}">
-				<option value="${b.timeInMillis}" selected="true" >
-				    ${b.displayName} 
-				    <i:formatDate value="${b.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>
-				</option>
-			    </j:when>
-			    <j:otherwise>
-				<option value="${b.timeInMillis}">
-				    ${b.displayName} 
-				    <i:formatDate value="${b.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>
-				</option>
-			    </j:otherwise>
-			</j:choose>
-		    </j:forEach>
-		</select>
-		<br />
+	    
+	    <f:entry>
+		<h2>${%Select builds}</h2>
+		<f:radio name="buildsFilter" value="ALL" checked="${it.buildsAllChecked}"/>${%All builds}<br />
+	    </f:entry>
+	    <f:entry>
+		<f:radio name="buildsFilter" value="RECENT" checked="${it.buildsRecentChecked}"/>${%Number of recent builds:} 
+		    <f:textbox name="numLastBuilds" clazz="positive-number" style="width: 50px" value="${it.buildsRecentNumber}" /><br />
+	    </f:entry>
+	    <f:entry>														       
+		<f:radio name="buildsFilter" value="INTERVAL" checked="${it.buildsIntervalChecked}" />${%Between two builds:}
 
-		<h2>${%Select configurations}</h2>
-		<f:radio name="confFilter" value="COMBINATIONFILTER" checked="${it.combinationFilterChecked}"/>${%Combination Filter:}
-		    <f:textbox name="combinationFilter" style="width: 400px" value="${it.combinationFilter}" />
+		    <select name="firstBuild">
+			<j:forEach var="b" items="${it.allBuilds}">
+			    <j:choose>
+				<j:when test="${b.timeInMillis == it.firstSelBuildTimestamp}">
+				    <option value="${b.timeInMillis}" selected="true" >
+					${b.displayName} 
+					<i:formatDate value="${b.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>
+				    </option>
+				</j:when>
+				<j:otherwise>
+				    <option value="${b.timeInMillis}" >
+					${b.displayName} 
+					<i:formatDate value="${b.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>
+				    </option>
+				</j:otherwise>
+			    </j:choose>
+			</j:forEach>
+		    </select>
+
+		    <select name="lastBuild">
+			<j:forEach var="b" items="${it.allBuilds}">
+			    <j:choose>
+				<j:when test="${b.timeInMillis == it.lastSelBuildTimestamp}">
+				    <option value="${b.timeInMillis}" selected="true" >
+					${b.displayName} 
+					<i:formatDate value="${b.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>
+				    </option>
+				</j:when>
+				<j:otherwise>
+				    <option value="${b.timeInMillis}">
+					${b.displayName} 
+					<i:formatDate value="${b.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>
+				    </option>
+				</j:otherwise>
+			    </j:choose>
+			</j:forEach>
+		    </select>
 		    <br />
-		<f:radio name="confFilter" value="MATRIX" checked="${it.matrixChecked}"/>${%Configuration matrix:}
-		    <st:include page="matrix.jelly"/>
-		    <br />
-	    <f:submit value="${%Rebuild Report}" />
+		</f:entry>
+		
+		
+		<f:entry help="/report-plugin/help-combinationFilter.html">
+		    <h2>${%Select configurations}</h2>
+		    <f:radio name="confFilter" value="COMBINATIONFILTER" checked="${it.combinationFilterChecked}"/>${%Combination Filter:}
+			<f:textbox name="combinationFilter" style="width: 400px" value="${it.combinationFilter}" />
+			<br />
+		</f:entry>
+		<f:entry>
+		    <f:radio name="confFilter" value="MATRIX" checked="${it.matrixChecked}"/>${%Configuration matrix:}
+			<st:include page="matrix.jelly"/>
+			<br />
+		    <f:submit value="${%Rebuild Report}" />
+		</f:entry>
 	</f:form>
 
       </l:main-panel>
