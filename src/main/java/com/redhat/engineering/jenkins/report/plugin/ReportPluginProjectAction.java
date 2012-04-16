@@ -4,10 +4,7 @@ package com.redhat.engineering.jenkins.report.plugin;
 import com.redhat.engineering.jenkins.report.plugin.util.GraphHelper;
 import com.redhat.engineering.jenkins.testparser.results.Filter;
 import groovy.lang.GroovyShell;
-import hudson.matrix.Combination;
-import hudson.matrix.MatrixBuild;
-import hudson.matrix.MatrixConfiguration;
-import hudson.matrix.MatrixProject;
+import hudson.matrix.*;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -362,26 +359,17 @@ public class ReportPluginProjectAction implements Action{
 	    // reset all checkboxes
 	    filter.removeCombinationFilter();
 	    
-	    Map map = req.getParameterMap();
-	    Set<String> keys = map.keySet();
-	    for(String key : keys){
-		/* Check fields of configuration matrix  */
-		if (key.startsWith(Definitions.__PREFIX)) {
-		    String[] vs = key.split(Definitions.__DELIMITER, 2);
-		    try {
-			if (vs.length > 1) {
-			    Combination c = Combination.fromString(vs[1]);
-			    filter.setConfiguration(c, true);
-			}
-
-		    } catch (JSONException e) {
-			/* No-op, not the field we were looking for. */
-		    }
+	    // parse submitted configuration matrix
+	    String input;
+	    for(MatrixConfiguration c : project.getActiveConfigurations()){
+		Combination cb = c.getCombination();
+		input = req.getParameter(cb.toString());
+		if(input != null){
+		    filter.setConfiguration(cb, true);
 		}
 	    }
-	} 
-	    
-	
+	}   
+	   
 	rsp.sendRedirect("../" + Definitions.__URL_NAME);
     }
 

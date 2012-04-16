@@ -55,10 +55,10 @@
 					    <div>
 						<j:choose>
 						    <j:when test="${it.isCombinationChecked(p.combination)}">
-							<f:checkbox name="${prefix}${p.combination.toString()}" checked="true"/>
+							<f:checkbox name="${p.combination.toString()}" checked="true"/>
 						    </j:when>
 						    <j:otherwise>
-							<f:checkbox name="${prefix}${p.combination.toString()}" checked="false" />
+							<f:checkbox name="${p.combination.toString()}" checked="false" />
 						    </j:otherwise>
 						</j:choose>
 						
