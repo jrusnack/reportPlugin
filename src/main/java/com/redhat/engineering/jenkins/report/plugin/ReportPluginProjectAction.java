@@ -78,8 +78,10 @@ public class ReportPluginProjectAction implements Action{
 	 */
 	builds = new RunList<MatrixBuild>();
 	buildFilteringMethod = BuildFilteringMethod.ALL;
-	confFilteringMethod = ConfigurationFilteringMethod.COMBINATIONFILTER;
+	confFilteringMethod = ConfigurationFilteringMethod.MATRIX;
 	combinationFilter = "";
+	String uuid = "RP_" + this.project.getName() + "_" + System.currentTimeMillis();
+	filter = new Filter(uuid, this.project.getAxes());
     }
     
     public String getIconFileName() {
@@ -103,46 +105,12 @@ public class ReportPluginProjectAction implements Action{
 	return project;
     }
     
-    /**
-     * Specify whether combination should be checked or not 
-     */
-    public void setCombinationChecked(Combination combination, boolean val){
-	checkedCombinations.put(combination.toString(), val);
-    }
-    
-    /**
-     * Set all currently known combinations to unchecked state
-     */
-    public void setAllCombinationUnchecked(){
-	/**
-	 * Check if all project combinations are already in <code>checkedCombinations</code>
-	 * if not, add them - otherwise if in the first use of report plugin we 
-	 * uncheck any field, it will default to checked since checkedCombinations
-	 * won`t say otherwise
-	 */
-	if(project.getActiveConfigurations().size() != checkedCombinations.size()){
-	    checkedCombinations.clear();
-	    Iterator<MatrixConfiguration> i = project.getActiveConfigurations().iterator();
-	    while(i.hasNext()){
-		checkedCombinations.put(i.next().getCombination().toString(), false);
-	    } 
-	    
-	}else{
-	    
-	    for (String comb: checkedCombinations.keySet()){
-		checkedCombinations.put(comb, false);
-	    }
-	}
-    }
     
     /**
      * Returns false when combination was unchecked by user
      */
-    public boolean isCombinationChecked(Combination combination){
-	if(this.checkedCombinations.containsKey(combination.toString())){
-	    return this.checkedCombinations.get(combination.toString());		    
-	}
-	return true;
+    public boolean isCombinationChecked(Combination combination){	
+	return filter.getConfiguration(combination);	
     }
     
     
@@ -333,13 +301,8 @@ public class ReportPluginProjectAction implements Action{
     public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws ServletException,
             IOException, InterruptedException {
 	
-	
-	String uuid = "RP_" + this.project.getName() + "_" + System.currentTimeMillis();
-	filter = new Filter(uuid, this.project.getAxes());
-	
 	// refresh page afterwards
 	refresh = true;
-	
 	
 	/*
 	 * Determine how builds are filtered (all, last N builds, interval)
@@ -397,7 +360,6 @@ public class ReportPluginProjectAction implements Action{
 	} else {
 	    
 	    // reset all checkboxes
-	    setAllCombinationUnchecked();
 	    filter.removeCombinationFilter();
 	    
 	    Map map = req.getParameterMap();
@@ -409,7 +371,6 @@ public class ReportPluginProjectAction implements Action{
 		    try {
 			if (vs.length > 1) {
 			    Combination c = Combination.fromString(vs[1]);
-			    setCombinationChecked(c, true);
 			    filter.setConfiguration(c, true);
 			}
 
