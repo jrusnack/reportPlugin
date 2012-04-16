@@ -104,7 +104,7 @@ function click2Change( status )
 		</f:entry>
 		
 		
-		<f:entry help="/report-plugin/help-combinationFilter.html">
+		<f:entry help="help-combinationFilter">
 		    <h2>${%Select configurations}</h2>
 		    <f:radio name="confFilter" value="COMBINATIONFILTER" checked="${it.combinationFilterChecked}"/>${%Combination Filter:}
 			<f:textbox name="combinationFilter" style="width: 400px" value="${it.combinationFilter}" />

@@ -475,5 +475,7 @@ public class ReportPluginProjectAction implements Action{
 	return combinationFilter;
     }
 
-    
+    public String getAxes(){
+	return project.getAxes().toString();
+    }
 }
