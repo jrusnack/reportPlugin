@@ -1,10 +1,12 @@
-
+    
 package com.redhat.engineering.jenkins.report.plugin;
 
 import com.redhat.engineering.jenkins.report.plugin.util.GraphHelper;
 import com.redhat.engineering.jenkins.testparser.results.Filter;
-import groovy.lang.GroovyShell;
-import hudson.matrix.*;
+import hudson.matrix.Combination;
+import hudson.matrix.MatrixBuild;
+import hudson.matrix.MatrixConfiguration;
+import hudson.matrix.MatrixProject;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -12,9 +14,10 @@ import hudson.util.ChartUtil;
 import hudson.util.DataSetBuilder;
 import hudson.util.RunList;
 import java.io.IOException;
-import java.util.*;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 import javax.servlet.ServletException;
-import net.sf.json.JSONException;
 import org.jfree.chart.JFreeChart;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -48,8 +51,6 @@ public class ReportPluginProjectAction implements Action{
     private int numLastBuilds;
     
     // stores builds to be used
-    private long firstSelBuildParam;
-    private long lastSelBuildParam;
     private long firstSelBuildTimestamp;
     private long lastSelBuildTimestamp;
     private RunList<MatrixBuild> builds;
@@ -74,9 +75,10 @@ public class ReportPluginProjectAction implements Action{
 	buildFilteringMethod = BuildFilteringMethod.ALL;
 	confFilteringMethod = ConfigurationFilteringMethod.MATRIX;
 	combinationFilter = "";
+	numLastBuilds = project.getLastBuild().number;
 	String uuid = "RP_" + this.project.getName() + "_" + System.currentTimeMillis();
 	filter = new Filter(uuid, this.project.getAxes());
-	numLastBuilds = project.getBuilds().size();
+	firstSelBuildTimestamp = project.getFirstBuild().getTimeInMillis();
     }
     
     public String getIconFileName() {
@@ -146,14 +148,14 @@ public class ReportPluginProjectAction implements Action{
 
 
 
-	/**
-	* If number of builds hasn't changed and if checkIfModified() returns true,
-	* no need to regenerate the graph. Browser should reuse it's cached image
-	*
-	* @param req
-	* @param rsp
-	* @return true, if new image does NOT need to be generated, false otherwise
-	*/
+    /**
+    * If number of builds hasn't changed and if checkIfModified() returns true,
+    * no need to regenerate the graph. Browser should reuse it's cached image
+    *
+    * @param req
+    * @param rsp
+    * @return true, if new image does NOT need to be generated, false otherwise
+    */
     private boolean newGraphNotNeeded(final StaplerRequest req,
 	    StaplerResponse rsp) {
 	
@@ -306,10 +308,10 @@ public class ReportPluginProjectAction implements Action{
 	
 	int n = numLastBuilds;
 	if(bf == BuildFilteringMethod.RECENT){
-	    int numProjBuilds = project.getBuilds().size();
 	    n = Integer.parseInt(req.getParameter("numLastBuilds"));
+	    int numProjBuilds = project.getLastBuild().number;
 	    n = n > numProjBuilds ? numProjBuilds : n; 
-	}
+	} 
 	
 	if(bf == buildFilteringMethod.INTERVAL){
 	    
@@ -328,11 +330,6 @@ public class ReportPluginProjectAction implements Action{
 		lastSelBuildTimestamp = tmp;
 	    }
 	    
-	    /*
-	     * make selection inclusive
-	     */
-	    firstSelBuildParam = firstSelBuildTimestamp -1;
-	    lastSelBuildParam = lastSelBuildTimestamp +1;
 	}
 	
 	/*
@@ -395,8 +392,8 @@ public class ReportPluginProjectAction implements Action{
 		}
 		break;
 	    case INTERVAL:
-		// FIXME: test
-		builds = (RunList<MatrixBuild>) project.getBuilds().byTimestamp(firstSelBuildParam, lastSelBuildParam);
+		builds = (RunList<MatrixBuild>) project.getBuilds().
+			byTimestamp(firstSelBuildTimestamp -1, lastSelBuildTimestamp +1);
 		break;
 	}
     }
