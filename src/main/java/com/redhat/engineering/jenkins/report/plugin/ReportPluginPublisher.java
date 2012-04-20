@@ -147,7 +147,7 @@ public class ReportPluginPublisher extends Recorder{
 	paths = Parser.checkReports(build, paths, logger);
 
 
-	boolean filesSaved = Parser.saveReports(getReportDir(mrun), paths, logger, "test-results");
+	boolean filesSaved = Parser.saveReports(Parser.getReportDir(mrun), paths, logger, "test-results");
 	if (!filesSaved) {
 	    logger.println("Failed to save TestNG XML reports");
 	    return true;
@@ -159,7 +159,7 @@ public class ReportPluginPublisher extends Recorder{
 	 * Parse results
 	 */
 	try {
-	    rResults = ReportPluginBuildAction.loadResults(mrun, logger);
+	    rResults = Parser.loadResults(mrun, logger);
 	} catch (Throwable t) {
 	    /*
 	    * don't fail build if parser barfs, only 
@@ -197,14 +197,6 @@ public class ReportPluginPublisher extends Recorder{
 	return true;
     }
     
-    
-    /**
-    * Gets the directory to store report files
-    */
-    static FilePath getReportDir(AbstractBuild<?,?> build) {
-	return new FilePath(new File(build.getRootDir(), "report-plugin"));
-    }
-
     
     
     @Extension

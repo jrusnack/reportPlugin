@@ -53,44 +53,6 @@ public class ReportPluginBuildAction implements Action, Serializable{
 	return Definitions.__URL_NAME;
     }
     
-    //FIXME: implement (or move to TestParser ?)
-    static TestResults loadResults(AbstractBuild<?, ?> build, PrintStream logger) {
-	
-	FilePath testngDir = ReportPluginPublisher.getReportDir(build);
-	FilePath[] paths = null;
-	try {
-	    paths = testngDir.list("test-results*.xml");
-	} catch (Exception e) {
-	    //do nothing
-	}
-    
-	TestResults tr = null;
-	if (paths == null) {
-	    if(build instanceof MatrixRun){
-		tr = new MatrixRunTestResults(UUID.randomUUID().toString());
-		tr.setOwner(build);
-		return tr;
-	    } else {
-		// TODO: [freestyle]
-		tr = new MatrixRunTestResults(UUID.randomUUID().toString());
-		tr.setOwner(build);
-		return tr;
-		
-	    }
-	}
-	    
-	Parser parser = new Parser(logger);
-	if(build instanceof MatrixRun){
-	    TestResults result = parser.parse(paths, true);
-	    result.setOwner(build);
-	    return result;
-	} else{
-	    // TODO: [freestyle]
-	    tr = new MatrixRunTestResults("");
-	    tr.setOwner(build);
-	    return tr;
-	}
-    }
     
     public int getPassedTestCount() {
 	// TODO: speed up via caching

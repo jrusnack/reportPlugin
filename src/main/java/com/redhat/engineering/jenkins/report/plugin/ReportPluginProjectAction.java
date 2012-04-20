@@ -75,7 +75,7 @@ public class ReportPluginProjectAction implements Action{
 	buildFilteringMethod = BuildFilteringMethod.ALL;
 	confFilteringMethod = ConfigurationFilteringMethod.MATRIX;
 	combinationFilter = "";
-	numLastBuilds = project.getLastBuild().number;
+	numLastBuilds = project.getLastBuild()!= null ? project.getLastBuild().number : 0;
 	String uuid = "RP_" + this.project.getName() + "_" + System.currentTimeMillis();
 	filter = new Filter(uuid, this.project.getAxes());
 	firstSelBuildTimestamp = project.getFirstBuild().getTimeInMillis();
@@ -104,7 +104,10 @@ public class ReportPluginProjectAction implements Action{
     
     
     /**
-     * Returns false when combination was unchecked by user
+     * Returns false when combination was unchecked by user.
+     * 
+     * @param combination
+     * @return 
      */
     public boolean isCombinationChecked(Combination combination){	
 	return filter.getConfiguration(combination);	
@@ -398,11 +401,20 @@ public class ReportPluginProjectAction implements Action{
 	}
     }
     
-    
+    /**
+     * Returns number of recent builds to be included, as it was configured.
+     * 
+     * @return 
+     */
     public int getBuildsRecentNumber(){
 	return this.numLastBuilds;
     }
     
+    /**
+     * Returns true if build filtering method is set to ALL.
+     * 
+     * @return 
+     */
     public boolean getBuildsAllChecked(){
 	if(buildFilteringMethod == BuildFilteringMethod.ALL) {
 	    return true;
@@ -410,6 +422,11 @@ public class ReportPluginProjectAction implements Action{
 	return false;
     }
     
+    /**
+     * Returns true if build filtering method is set to RECENT.
+     * 
+     * @return 
+     */
     public boolean getBuildsRecentChecked(){
 	if(buildFilteringMethod == BuildFilteringMethod.RECENT) {
 	    return true;
@@ -417,6 +434,11 @@ public class ReportPluginProjectAction implements Action{
 	return false;
     }
     
+    /**
+     * Returns true if build filtering method is set to INTERVAL
+     * 
+     * @return 
+     */
     public boolean getBuildsIntervalChecked(){
 	if(buildFilteringMethod == BuildFilteringMethod.INTERVAL) {
 	    return true;
@@ -424,6 +446,12 @@ public class ReportPluginProjectAction implements Action{
 	return false;
     }
     
+    /**
+     * Returns true if configurations filtering method is set to MATRIX
+     * (Configurations were filtered with matrix last time)
+     * 
+     * @return 
+     */
     public boolean getMatrixChecked(){
 	if(confFilteringMethod == ConfigurationFilteringMethod.MATRIX){
 	    return true;
@@ -431,6 +459,12 @@ public class ReportPluginProjectAction implements Action{
 	return false;
     }
     
+    /**
+     * Returns true if configurations filtering method is set to COMBINATIONFILTER
+     * (Combination Filter was submitted last time and now should be checked)
+     * 
+     * @return 
+     */
     public boolean getCombinationFilterChecked(){
 	if(confFilteringMethod == ConfigurationFilteringMethod.COMBINATIONFILTER){
 	    return true;
@@ -447,19 +481,40 @@ public class ReportPluginProjectAction implements Action{
 	return project.getBuilds();
     }
     
+    /**
+     * Returns timestamp of first selected build - used in dropdown menu for
+     * selecting interval
+     * 
+     * @return  Time in milliseconds
+     */
     public long getFirstSelBuildTimestamp() {
         return firstSelBuildTimestamp;
     }
     
-    
+    /**
+     * Returns timestamp of last selected build - used in dropdown menu for 
+     * selecting interval
+     * 
+     * @return  Time in milliseconds
+     */
     public long getLastSelBuildTimestamp() {
         return lastSelBuildTimestamp;
     }
     
+    /**
+     * Returns combinations filter, that was submitted by user last time
+     * 
+     * @return  
+     */
     public String getCombinationFilter(){
 	return combinationFilter;
     }
 
+    /**
+     * Returns axes and theirs values for this project
+     * 
+     * @return  String in format [axis={value, value,...}, axis={value, ..}, ..]
+     */
     public String getAxes(){
 	return project.getAxes().toString();
     }
