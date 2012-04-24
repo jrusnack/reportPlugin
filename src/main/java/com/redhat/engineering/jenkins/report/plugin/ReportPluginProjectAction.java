@@ -195,24 +195,6 @@ public class ReportPluginProjectAction implements Action{
 	return false;
     }
 
-    public void doGraphMap(final StaplerRequest req,
-	    StaplerResponse rsp) throws IOException {
-	if (newGraphNotNeeded(req, rsp)) {
-	    return;
-	}
-
-	final DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel> dataSetBuilder =
-	new DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel>();
-
-	//TODO: optimize by using cache
-	populateDataSetBuilder(dataSetBuilder,null);
-	new hudson.util.Graph(-1, getGraphWidth(), getGraphHeight()) {
-	    protected JFreeChart createGraph() {
-	    return GraphHelper.createChart(req, dataSetBuilder.build());
-	    }
-	}.doMap(req, rsp);
-    }
-    
     /**
     * Generates the graph that shows test pass/fail ratio
     * @param req -
