@@ -16,10 +16,11 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Recorder;
 import hudson.util.FormValidation;
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.UUID;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -31,7 +32,7 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class ReportPluginPublisher extends Recorder{
     public final String reportLocationPattern;
-    private ReportPluginProjectAction projectAction;
+    public ReportPluginProjectAction projectAction;
 
     
    /**

@@ -78,7 +78,7 @@ public class ReportPluginProjectAction implements Action{
 	numLastBuilds = project.getLastBuild()!= null ? project.getLastBuild().number : 0;
 	String uuid = "RP_" + this.project.getName() + "_" + System.currentTimeMillis();
 	filter = new Filter(uuid, this.project.getAxes());
-	firstSelBuildTimestamp = project.getFirstBuild().getTimeInMillis();
+	firstSelBuildTimestamp = project.getFirstBuild() != null ? project.getFirstBuild().getTimeInMillis() : 0;
     }
     
     public String getIconFileName() {
@@ -229,7 +229,7 @@ public class ReportPluginProjectAction implements Action{
     protected void populateDataSetBuilder(DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel> dataset,
 	    Filter filter) {
 
-	updateFilteredBuilds();
+	//updateFilteredBuilds();
 	for (AbstractBuild<?, ?> build : builds) 
 	{
 	    ChartUtil.NumberOnlyBuildLabel label = new ChartUtil.NumberOnlyBuildLabel(build);
@@ -291,21 +291,44 @@ public class ReportPluginProjectAction implements Action{
 	 */
 	BuildFilteringMethod bf= BuildFilteringMethod.valueOf(req.getParameter("buildsFilter"));
 	
-	int n = numLastBuilds;
+        if(bf == BuildFilteringMethod.ALL){
+            numLastBuilds = project.getBuilds().size();
+        }
+        
+        int n = numLastBuilds;
+        
 	if(bf == BuildFilteringMethod.RECENT){
-	    n = Integer.parseInt(req.getParameter("numLastBuilds"));
-	    int numProjBuilds = project.getLastBuild().number;
+            try{
+                n = Integer.parseInt(req.getParameter("numLastBuilds"));
+            }catch (NumberFormatException e){
+                // invalid input, so do nothing
+            }
+	    int numProjBuilds = project.getBuilds().size();
+            
+            /**
+             * Make sure that submitted value is not higher than possible
+             */
 	    n = n > numProjBuilds ? numProjBuilds : n; 
+            /**
+             * If number of recent builds has changed, then update builds
+             */
+            if(n != numLastBuilds){
+                numLastBuilds = n > 1 ? n : 2;
+                updateFilteredBuilds();
+            }
 	} 
 	
-	if(bf == buildFilteringMethod.INTERVAL){
+	if(bf == BuildFilteringMethod.INTERVAL){
 	    
 	    /*
 	     * Get timestamps of first and last build
 	     */
-	    firstSelBuildTimestamp = Long.parseLong(req.getParameter("firstBuild"));
-	    lastSelBuildTimestamp = Long.parseLong(req.getParameter("lastBuild"));
-	    
+            try{
+                firstSelBuildTimestamp = Long.parseLong(req.getParameter("firstBuild"));
+                lastSelBuildTimestamp = Long.parseLong(req.getParameter("lastBuild"));
+            } catch (NumberFormatException e){
+                // invalid input, so do nothing
+            }
 	    /*
 	     * Swap when user entered invalid range
 	     */
@@ -314,16 +337,15 @@ public class ReportPluginProjectAction implements Action{
 		firstSelBuildTimestamp= lastSelBuildTimestamp;
 		lastSelBuildTimestamp = tmp;
 	    }
+            updateFilteredBuilds();
 	    
 	}
 	
 	/*
-	 * If filtering of builds is new or different number of recent builds was
-	 * set, we need to update builds fields
+	 * If method of filtering of builds has changed
 	 */
-	if(!bf.equals(buildFilteringMethod) || n != numLastBuilds){
+	if(!bf.equals(buildFilteringMethod) ){
 	    buildFilteringMethod = bf;
-	    numLastBuilds = n > 1 ? n : 2;
 	    updateFilteredBuilds();
 	}
 	    
@@ -371,14 +393,16 @@ public class ReportPluginProjectAction implements Action{
 	    case RECENT:
 		MatrixBuild build = project.getLastBuild();
 		for (int i=0; i < numLastBuilds; i++ ){
+                    if(build == null) break;
 		    builds.add(build);
-		    build = build.getPreviousBuild();
-		    if(build == null) break;		   
+		    build = build.getPreviousBuild();  
 		}
+                
 		break;
 	    case INTERVAL:
 		builds = (RunList<MatrixBuild>) project.getBuilds().
 			byTimestamp(firstSelBuildTimestamp -1, lastSelBuildTimestamp +1);
+                numLastBuilds = builds.size();
 		break;
 	}
     }
@@ -389,7 +413,7 @@ public class ReportPluginProjectAction implements Action{
      * @return 
      */
     public int getBuildsRecentNumber(){
-	return this.numLastBuilds;
+	return numLastBuilds;
     }
     
     /**
@@ -470,7 +494,7 @@ public class ReportPluginProjectAction implements Action{
      * @return  Time in milliseconds
      */
     public long getFirstSelBuildTimestamp() {
-        return firstSelBuildTimestamp;
+        return builds.getFirstBuild() != null ? builds.getFirstBuild().getTimeInMillis() : 0;
     }
     
     /**
@@ -480,7 +504,7 @@ public class ReportPluginProjectAction implements Action{
      * @return  Time in milliseconds
      */
     public long getLastSelBuildTimestamp() {
-        return lastSelBuildTimestamp;
+        return builds.getLastBuild() != null ? builds.getLastBuild().getTimeInMillis() : 0;
     }
     
     /**
