@@ -128,14 +128,22 @@ function sel( axis )
 		
 		<f:entry help="help-combinationFilter">
 		    <h2>${%Select configurations}</h2>
-		    <f:radio name="confFilter" value="COMBINATIONFILTER" checked="${it.combinationFilterChecked}"/>${%Combination Filter:}
-			<f:textbox name="combinationFilter" style="width: 400px" value="${it.combinationFilter}" />
-			<br />
+                    <table>
+                        <tr><td>
+                            <f:radio name="confFilter" value="COMBINATIONFILTER" checked="${it.combinationFilterChecked}"/>${%Combination Filter:}
+                        </td><td>
+                            <f:textbox name="combinationFilter" style="width: 400px" value="${it.combinationFilter}" />
+                        </td></tr>
+                    </table>
 		</f:entry>
 		<f:entry>
-		    <f:radio name="confFilter" value="MATRIX" checked="${it.matrixChecked}"/>${%Configuration matrix:}
-			<st:include page="matrix.jelly"/>
-			<br />
+                    <table>
+                         <tr><td>
+                            <f:radio name="confFilter" value="MATRIX" checked="${it.matrixChecked}"/>${%Configuration matrix:}
+                         </td><td>
+                            <st:include page="matrix.jelly"/>
+                        </td></tr>
+                    </table>
 		    <f:submit value="${%Rebuild Report}" />
 		</f:entry>
 	</f:form>

@@ -13,14 +13,20 @@
 		<!-- Optimized case when there's only one dimension to the axis (or 
 			zero dimension) -->
 		<j:when test="${empty(o.x) and empty(o.y)}">
-			<j:forEach var="p" items="${o.rows[0][0]}">
+                    <table border="1" class="middle-align center-align">
+                            <j:forEach var="p" items="${o.rows[0][0]}">
 				<!-- <d:invokeBody /> -->
-				<st:include page="main.jelly" />
-				<st:nbsp />
-				<j:if test="${!it.combinationExists(build, p.combination)}">
-					<j:set var="changed" value="1" />
-				</j:if>
-			</j:forEach>
+                                    <tr><td>
+                                        ${p.combination.toString(o.z)}
+                                    </td><td>
+                                        <st:include page="main.jelly" /> 
+                                        
+                                        <j:if test="${!it.combinationExists(build, p.combination)}">
+                                                <j:set var="changed" value="1" />
+                                        </j:if>
+                                    </td></tr>
+                            </j:forEach>
+                    </table>
 		</j:when>
 
 		<j:otherwise>
@@ -56,18 +62,7 @@
 				<j:forEach var="c" items="${r}">
 				    <td>
 					<j:forEach var="p" items="${c}">
-					    <div>
-						<j:choose>
-						    <j:when test="${it.isCombinationChecked(p.combination)}">
-							<f:checkbox name="${p.combination.toString()}" checked="true"/>
-						    </j:when>
-						    <j:otherwise>
-							<f:checkbox name="${p.combination.toString()}" checked="false" />
-						    </j:otherwise>
-						</j:choose>
-						
-						
-					    </div>
+					    <st:include page="main.jelly" />
 					    <j:if test="${!it.combinationExists(build, p.combination)}">
 						<j:set var="changed" value="1" />
 					    </j:if>
@@ -86,7 +81,7 @@
 		<br /><br />
 	    </j:if>
 
-	    
+	    <br/>
 	    <span style="font-weight:bold">${%Select}: </span> 
 	    <a href="#" onclick="click2Change(2);">${%All}</a> - 
 	    <a href="#" onclick="click2Change(0);">${%None}</a>

@@ -79,6 +79,7 @@ public class ReportPluginProjectAction implements Action{
 	String uuid = "RP_" + this.project.getName() + "_" + System.currentTimeMillis();
 	filter = new Filter(uuid, this.project.getAxes());
 	firstSelBuildTimestamp = project.getFirstBuild() != null ? project.getFirstBuild().getTimeInMillis() : 0;
+        updateFilteredBuilds();
     }
     
     public String getIconFileName() {
@@ -303,17 +304,22 @@ public class ReportPluginProjectAction implements Action{
             }catch (NumberFormatException e){
                 // invalid input, so do nothing
             }
-	    int numProjBuilds = project.getBuilds().size();
+	    
             
             /**
              * Make sure that submitted value is not higher than possible
              */
-	    n = n > numProjBuilds ? numProjBuilds : n; 
+            int numProjBuilds = project.getBuilds().size();
+	    n = n > numProjBuilds ? numProjBuilds : n;
+            
             /**
              * If number of recent builds has changed, then update builds
              */
             if(n != numLastBuilds){
-                numLastBuilds = n > 1 ? n : 2;
+                /**
+                 * Make sure submitted value is not lower than possible
+                 */
+                numLastBuilds = n > 0 ? n : 1;
                 updateFilteredBuilds();
             }
 	} 
