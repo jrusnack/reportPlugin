@@ -55,6 +55,8 @@ public class ReportPluginProjectAction implements Action{
     private long lastSelBuildTimestamp;
     private RunList<MatrixBuild> builds;
     
+    private ReportPluginTestAggregator testAggregator;
+    
     enum BuildFilteringMethod {
 	ALL, RECENT, INTERVAL
     }
@@ -79,6 +81,7 @@ public class ReportPluginProjectAction implements Action{
 	String uuid = "RP_" + this.project.getName() + "_" + System.currentTimeMillis();
 	filter = new Filter(uuid, this.project.getAxes());
 	firstSelBuildTimestamp = project.getFirstBuild() != null ? project.getFirstBuild().getTimeInMillis() : 0;
+        testAggregator = new ReportPluginTestAggregator();
         updateFilteredBuilds();
     }
     
@@ -101,6 +104,10 @@ public class ReportPluginProjectAction implements Action{
     
     public AbstractProject<?, ?> getProject() {	
 	return project;
+    }
+    
+    public ReportPluginTestAggregator getTestAggregator(){
+        return testAggregator;
     }
     
     
@@ -142,7 +149,7 @@ public class ReportPluginProjectAction implements Action{
 	    if (build == null) {
 		return false;
 	    }
-	    if (build.getAction(ReportPluginBuildAction.class) != null) {
+	    if (testAggregator.containsKey(build.number)) {
 		numPoints++;
 	    }
 	    build = build.getPreviousBuild();
@@ -230,27 +237,26 @@ public class ReportPluginProjectAction implements Action{
     protected void populateDataSetBuilder(DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel> dataset,
 	    Filter filter) {
 
-	//updateFilteredBuilds();
+        // FIXME: optimize storing just build numbers, not builds 
 	for (AbstractBuild<?, ?> build : builds) 
 	{
 	    ChartUtil.NumberOnlyBuildLabel label = new ChartUtil.NumberOnlyBuildLabel(build);
-	    ReportPluginBuildAction action = build.getAction(ReportPluginBuildAction.class);
 	    
-	    if (action != null) {
+	    if (testAggregator.containsKey(build.number)) {
 		
 		if(filter != null){
-		    action.addFilter(filter);
+		    testAggregator.addFilter(build.number, filter);
 		}
 		
-		int a = action.getPassedTestCount();
+		int a = testAggregator.getPassedTestCount(build.number);
 		dataset.add(a, "Passed", label);
-		a = action.getFailedTestCount();
+		a = testAggregator.getFailedTestCount(build.number);
 		dataset.add(a, "Failed", label);
-		a = action.getSkippedTestCount();
+		a = testAggregator.getSkippedTestCount(build.number);
 		dataset.add(a , "Skipped", label);
 		
 		if(filter != null){
-		    action.removeFilter();
+		    testAggregator.removeFilter(build.number);
 		}
 		
 	    } else {
@@ -293,7 +299,10 @@ public class ReportPluginProjectAction implements Action{
 	BuildFilteringMethod bf= BuildFilteringMethod.valueOf(req.getParameter("buildsFilter"));
 	
         if(bf == BuildFilteringMethod.ALL){
-            numLastBuilds = project.getBuilds().size();
+            if(numLastBuilds != project.getBuilds().size()){
+                numLastBuilds = project.getBuilds().size();
+                updateFilteredBuilds();
+            }
         }
         
         int n = numLastBuilds;

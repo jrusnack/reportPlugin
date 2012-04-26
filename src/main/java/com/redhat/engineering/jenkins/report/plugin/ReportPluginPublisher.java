@@ -85,16 +85,13 @@ public class ReportPluginPublisher extends Recorder{
 	     * If not initialized, create MatrixBuildTestResults, add them to
 	     * ReportPluginBuildAction and add it to build actions
 	     */
-	    MatrixBuild mbuild = mrun.getParentBuild();
-	    ReportPluginBuildAction ourAction = mbuild.getAction(ReportPluginBuildAction.class);
-	    if(ourAction == null) {
+	    if(! projectAction.getTestAggregator().containsKey(mrun.getParentBuild().number)) {
 		/*
 		 * MatrixBuildTestResults will store mapping matrix run -> test results
 		 */
 		MatrixBuildTestResults bResults = new MatrixBuildTestResults(UUID.randomUUID().toString());
-		ReportPluginBuildAction action = new 
-			ReportPluginBuildAction(mbuild, bResults, projectAction);
-		mrun.getParentBuild().getActions().add(action);
+                
+		projectAction.getTestAggregator().addBuildResults(mrun.getParentBuild().number, bResults);
 	    }
 	    return true;
 	}
@@ -178,9 +175,14 @@ public class ReportPluginPublisher extends Recorder{
 	    /*
 	     * Add matrix run rResults to parent build`s bResults
 	     */ 
-	    MatrixBuildTestResults bResults = mrun.getParentBuild().getAction(ReportPluginBuildAction.class).getBuildResults();
-	    bResults.addMatrixRunTestResults(mrun.toString(), mrun.getParent().getCombination(), rResults);
-	    rResults.setParent(bResults);
+            MatrixBuildTestResults bResults = projectAction.getTestAggregator().getBuildResults(mrun.getParentBuild().number);
+            bResults.addMatrixRunTestResults(mrun.toString(), mrun.getParent().getCombination(), rResults);
+            rResults.setParent(bResults);
+            
+//            
+//	    MatrixBuildTestResults bResults = mrun.getParentBuild().getAction(ReportPluginBuildAction.class).getBuildResults();
+//	    bResults.addMatrixRunTestResults(mrun.toString(), mrun.getParent().getCombination(), rResults);
+//	    rResults.setParent(bResults);
 	    
 	    
 	    if (rResults.getFailedTestCount() > 0) {

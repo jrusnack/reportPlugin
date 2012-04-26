@@ -5,7 +5,8 @@
 package com.redhat.engineering.jenkins.report.plugin.util;
 
 import com.redhat.engineering.jenkins.report.plugin.Definitions;
-import com.redhat.engineering.jenkins.report.plugin.ReportPluginBuildAction;
+import com.redhat.engineering.jenkins.report.plugin.ReportPluginProjectAction;
+import com.redhat.engineering.jenkins.report.plugin.ReportPluginTestAggregator;
 import hudson.util.ChartUtil;
 import hudson.util.ColorPalette;
 import hudson.util.ShiftedCategoryAxis;
@@ -78,18 +79,19 @@ public class GraphHelper {
           @Override
           public String generateToolTip(CategoryDataset dataset, int row, int column) {
               ChartUtil.NumberOnlyBuildLabel label = (ChartUtil.NumberOnlyBuildLabel) dataset.getColumnKey(column);
-              ReportPluginBuildAction report = label.build.getAction(ReportPluginBuildAction.class);
-              if (report == null) {
+              int buildNum = label.build.number;
+              ReportPluginTestAggregator aggregator = label.build.getProject().getAction(ReportPluginProjectAction.class).getTestAggregator();
+              if (! aggregator.containsKey(label.build.number)) {
                  //there are no testng results associated with this build
                  return "";
               }
               switch (row) {
                   case 0:
-                      return String.valueOf(report.getFailedTestCount()) + " Failure(s)";
+                      return String.valueOf(aggregator.getFailedTestCount(buildNum)) + " Failure(s)";
                   case 1:
-                     return String.valueOf(report.getPassedTestCount()) + " Pass";
+                     return String.valueOf(aggregator.getPassedTestCount(buildNum)) + " Pass";
                   case 2:
-                     return String.valueOf(report.getSkippedTestCount()) + " Skip(s)";
+                     return String.valueOf(aggregator.getSkippedTestCount(buildNum)) + " Skip(s)";
                   default:
                      return "";
               }
