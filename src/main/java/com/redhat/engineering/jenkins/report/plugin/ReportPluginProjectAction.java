@@ -179,12 +179,15 @@ public class ReportPluginProjectAction implements Action{
 	}
 	
 	Calendar t = getProject().getLastCompletedBuild().getTimestamp();
+        // FIXME: optimize, subsitute request map with numLastBuidls
 	Integer prevNumBuilds = requestMap.get(req.getRequestURI());
 	int numBuilds = getProject().getBuilds().size();
 
 	//change null to 0
 	prevNumBuilds = prevNumBuilds == null ? 0 : prevNumBuilds;
 	if (prevNumBuilds != numBuilds) {
+            updateFilteredBuilds();
+            numLastBuilds = numBuilds;
 	    requestMap.put(req.getRequestURI(), numBuilds);
 	}
 

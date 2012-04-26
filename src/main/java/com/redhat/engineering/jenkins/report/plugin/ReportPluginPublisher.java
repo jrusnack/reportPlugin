@@ -157,7 +157,7 @@ public class ReportPluginPublisher extends Recorder{
 	 * Parse results
 	 */
 	try {
-	    rResults = Parser.loadResults(mrun, logger);
+	    rResults = Parser.loadResults(mrun, logger, "test-results");
 	} catch (Throwable t) {
 	    /*
 	    * don't fail build if parser barfs, only 
