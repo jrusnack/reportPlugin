@@ -39,7 +39,7 @@ public class ReportPluginProjectAction implements Action{
     * Only used in newGraphNotNeeded() method. Key is the request URI and value
     * is the number of builds for the project.
     */
-    private transient Map<String, Integer> requestMap = new HashMap<String, Integer>();
+    //private transient Map<String, Integer> requestMap = new HashMap<String, Integer>();
     
     // indicates how should builds be filtered
     private BuildFilteringMethod buildFilteringMethod;
@@ -179,31 +179,20 @@ public class ReportPluginProjectAction implements Action{
 	}
 	
 	Calendar t = getProject().getLastCompletedBuild().getTimestamp();
-        // FIXME: optimize, subsitute request map with numLastBuidls
-	Integer prevNumBuilds = requestMap.get(req.getRequestURI());
 	int numBuilds = getProject().getBuilds().size();
-
-	//change null to 0
-	prevNumBuilds = prevNumBuilds == null ? 0 : prevNumBuilds;
-	if (prevNumBuilds != numBuilds) {
-            updateFilteredBuilds();
-            numLastBuilds = numBuilds;
-	    requestMap.put(req.getRequestURI(), numBuilds);
-	}
-
-	if (requestMap.size() > 10) {
-	    //keep map size in check
-	    requestMap.clear();
-	}
-
-	if (prevNumBuilds == numBuilds && req.checkIfModified(t, rsp)) {
+        
+	if (numLastBuilds == numBuilds && req.checkIfModified(t, rsp)) {
 	    /*
 	    * checkIfModified() is after '&&' because we want it evaluated only
 	    * if number of builds is different
 	    */
 	    return true;
-	}
-	return false;
+	} else { 
+            updateFilteredBuilds();
+            numLastBuilds = numBuilds;
+            return false;
+        }
+	
     }
 
     /**
@@ -240,7 +229,6 @@ public class ReportPluginProjectAction implements Action{
     protected void populateDataSetBuilder(DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel> dataset,
 	    Filter filter) {
 
-        // FIXME: optimize storing just build numbers, not builds 
 	for (AbstractBuild<?, ?> build : builds) 
 	{
 	    ChartUtil.NumberOnlyBuildLabel label = new ChartUtil.NumberOnlyBuildLabel(build);

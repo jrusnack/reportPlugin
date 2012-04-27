@@ -6,7 +6,6 @@ package com.redhat.engineering.jenkins.report.plugin;
 
 import com.redhat.engineering.jenkins.testparser.results.Filter;
 import com.redhat.engineering.jenkins.testparser.results.MatrixBuildTestResults;
-import hudson.model.Build;
 import java.util.HashMap;
 import java.util.Map;
 
