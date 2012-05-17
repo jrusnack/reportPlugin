@@ -1,9 +1,8 @@
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
-         xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-   <l:layout title="TestNG Results Trend">
-      <st:include it="${it.build}" page="sidepanel.jelly"/>
-      <l:main-panel>
-<script><![CDATA[
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
+	xmlns:p="/lib/hudson/project" xmlns:i="jelly:fmt">
+            
+            <script><![CDATA[
 function click2Change( status )
 {
 	var i;
@@ -55,20 +54,15 @@ function sel( axis )
 
 	<h1>${%Report Plugin Results Trend}</h1>
 	<j:choose>
+            
 	    <j:when test="${it.graphActive}">
-	    <img src="graph" alt="[Test result trend chart]"/>
+                <img src="graph" alt="[Test result trend chart]"/>
 	    </j:when>
 	    <j:otherwise>${%Need at least 2 builds with results to show trend graph}
 	    </j:otherwise>
 	</j:choose>
 
-	<j:invokeStatic var="currentThread" className="java.lang.Thread"
-	    method="currentThread" />
-	<j:invoke var="buildClass" on="${currentThread.contextClassLoader}"
-	    method="loadClass">
-	    <j:arg value="hudson.model.AbstractProject" />
-	</j:invoke>
-	<j:set var="build" value="${request.findAncestorObject(buildClass)}" />
+        <j:set var="build" value="${it.project}" />
 	<j:set var="o" value="${build.layouter}" />
 	
 	
@@ -147,7 +141,5 @@ function sel( axis )
 		    <f:submit value="${%Rebuild Report}" />
 		</f:entry>
 	</f:form>
-
-      </l:main-panel>
-   </l:layout>
+            
 </j:jelly>
