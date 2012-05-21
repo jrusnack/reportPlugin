@@ -1,11 +1,17 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2012 Red Hat, Inc.     
+ * 
+ * This copyrighted material is made available to anyone wishing to use, 
+ * modify, copy, or redistribute it subject to the terms and conditions of the 
+ * GNU General Public License v.2.
+ * 
+ * Authors: Jan Rusnacko (jrusnack at redhat dot com)
  */
+
 package com.redhat.engineering.jenkins.report.plugin;
 
-import com.redhat.engineering.jenkins.testparser.results.Filter;
-import com.redhat.engineering.jenkins.testparser.results.MatrixBuildTestResults;
+import com.redhat.engineering.jenkins.report.plugin.results.Filter;
+import com.redhat.engineering.jenkins.report.plugin.results.MatrixBuildTestResults;
 import java.util.HashMap;
 import java.util.Map;
 

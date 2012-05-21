@@ -1,8 +1,16 @@
-    
+/*
+ * Copyright (C) 2012 Red Hat, Inc.     
+ * 
+ * This copyrighted material is made available to anyone wishing to use, 
+ * modify, copy, or redistribute it subject to the terms and conditions of the 
+ * GNU General Public License v.2.
+ * 
+ * Authors: Jan Rusnacko (jrusnack at redhat dot com)
+ */    
 package com.redhat.engineering.jenkins.report.plugin;
 
+import com.redhat.engineering.jenkins.report.plugin.results.Filter;
 import com.redhat.engineering.jenkins.report.plugin.util.GraphHelper;
-import com.redhat.engineering.jenkins.testparser.results.Filter;
 import hudson.matrix.Combination;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixConfiguration;
@@ -23,8 +31,10 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 /**
- *
+ * Some methods reused from TestNG plugin (author nullin)
+ * 
  * @author Jan Rusnacko (jrusnack at redhat.com)
+ * @author nullin
  */
 public class ReportPluginProjectAction implements Action{
     private final MatrixProject project;
@@ -34,12 +44,6 @@ public class ReportPluginProjectAction implements Action{
     // each combination is either checked or unchecked by user or has default value
     private Map<String, Boolean> checkedCombinations;
     
-    /**
-    * Used to figure out if we need to regenerate the graphs or not.
-    * Only used in newGraphNotNeeded() method. Key is the request URI and value
-    * is the number of builds for the project.
-    */
-    //private transient Map<String, Integer> requestMap = new HashMap<String, Integer>();
     
     // indicates how should builds be filtered
     private BuildFilteringMethod buildFilteringMethod;
@@ -97,9 +101,9 @@ public class ReportPluginProjectAction implements Action{
 	return Definitions.__URL_NAME;
     }
     
-    public String getPrefix() {
-	return Definitions.__PREFIX;
-    }
+//    public String getPrefix() {
+//	return Definitions.__PREFIX;
+//    }
     
     
     public AbstractProject<?, ?> getProject() {	

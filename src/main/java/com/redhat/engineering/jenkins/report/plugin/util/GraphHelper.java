@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package com.redhat.engineering.jenkins.report.plugin.util;
 
 import com.redhat.engineering.jenkins.report.plugin.Definitions;
@@ -27,8 +24,7 @@ import org.jfree.ui.RectangleInsets;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
- *
- * @author Jan Rusnacko (jrusnack at redhat.com)
+ * All credit due to authors of TestNG plugin
  */
 public class GraphHelper {
      public static JFreeChart createChart(StaplerRequest req, CategoryDataset dataset) {

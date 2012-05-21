@@ -1,14 +1,22 @@
+/*
+ * Copyright (C) 2012 Red Hat, Inc.     
+ * 
+ * This copyrighted material is made available to anyone wishing to use, 
+ * modify, copy, or redistribute it subject to the terms and conditions of the 
+ * GNU General Public License v.2.
+ * 
+ * Authors: Jan Rusnacko (jrusnack at redhat dot com)
+ */
 
 package com.redhat.engineering.jenkins.report.plugin;
 
-import com.redhat.engineering.jenkins.testparser.Parser;
-import com.redhat.engineering.jenkins.testparser.results.MatrixBuildTestResults;
-import com.redhat.engineering.jenkins.testparser.results.MatrixRunTestResults;
-import com.redhat.engineering.jenkins.testparser.results.TestResults;
+import com.redhat.engineering.jenkins.report.plugin.parser.Parser;
+import com.redhat.engineering.jenkins.report.plugin.results.MatrixBuildTestResults;
+import com.redhat.engineering.jenkins.report.plugin.results.MatrixRunTestResults;
+import com.redhat.engineering.jenkins.report.plugin.results.TestResults;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.MatrixRun;
 import hudson.model.*;
@@ -27,7 +35,8 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
- *
+ * Parts of code were reused from TestNG plugin (credits due to its authors)
+ * 
  * @author Jan Rusnacko (jrusnack at redhat.com)
  */
 public class ReportPluginPublisher extends Recorder{
@@ -64,7 +73,6 @@ public class ReportPluginPublisher extends Recorder{
      * NONE = No external synchronization is performed on this build step.
      */
     public BuildStepMonitor getRequiredMonitorService() {
-	//TODO: check if STEP is really necessary, or if NONE suffices
 	return BuildStepMonitor.STEP;
     }
     
@@ -73,12 +81,8 @@ public class ReportPluginPublisher extends Recorder{
      * (only first matrix run needs to initialize parent matrix build)
      * 
      */
-    //TODO: Write JUnit test
     @Override
     public boolean prebuild(AbstractBuild<?,?> build, BuildListener listener){
-	/*
-	 * TODO: [freestyle] implement
-	 */
 	if(build instanceof MatrixRun){
 	    MatrixRun mrun = (MatrixRun) build;
 	    /*
@@ -116,9 +120,6 @@ public class ReportPluginPublisher extends Recorder{
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher,
 	BuildListener listener) throws InterruptedException, IOException{
 	
-	/* Only for matrix projects now
-	 * TODO: [freestyle] implement
-	 */
 	if(!(build instanceof MatrixRun)){
 	    return false;
 	}
@@ -178,13 +179,7 @@ public class ReportPluginPublisher extends Recorder{
             MatrixBuildTestResults bResults = projectAction.getTestAggregator().getBuildResults(mrun.getParentBuild().number);
             bResults.addMatrixRunTestResults(mrun.toString(), mrun.getParent().getCombination(), rResults);
             rResults.setParent(bResults);
-            
-//            
-//	    MatrixBuildTestResults bResults = mrun.getParentBuild().getAction(ReportPluginBuildAction.class).getBuildResults();
-//	    bResults.addMatrixRunTestResults(mrun.toString(), mrun.getParent().getCombination(), rResults);
-//	    rResults.setParent(bResults);
-	    
-	    
+            	    
 	    if (rResults.getFailedTestCount() > 0) {
 		mrun.setResult(Result.UNSTABLE);
 	    }
@@ -211,12 +206,10 @@ public class ReportPluginPublisher extends Recorder{
 	 * @param val	    location to be checked
 	 * @return 
 	 */
-	//TODO: implement report checking
 	public FormValidation doCheckReportLocationPattern(@QueryParameter String val){
 	    return FormValidation.ok();
 	}
 	
-	// TODO: [freestyle] implement
 	@Override
 	public boolean isApplicable(Class<? extends AbstractProject> project) {
 	    if(project == MatrixProject.class){

@@ -3,6 +3,11 @@
       <tr>
           <td>
               ${jobs.get(0).getActions().get(0)}
+                <f:form method="post" action="configSubmit" name="Save"> 
+                    <f:entry>
+                        <input type="submit" name="Submit" value="${%Save}" class="submit-button" /> 
+                    </f:entry>
+                </f:form>
               <j:set var="it" value="${jobs.get(0).getActions().get(0)}" />
               <st:include it="${jobs.get(0).getActions().get(0)}" page="report.jelly"/>
           </td>
