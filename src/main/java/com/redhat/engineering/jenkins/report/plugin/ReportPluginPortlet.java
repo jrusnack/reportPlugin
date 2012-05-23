@@ -186,8 +186,8 @@ public class ReportPluginPortlet extends DashboardPortlet {
                 LocalDateLabel label = new LocalDateLabel(entry.getKey());
                 //FIXME
                 dsb.add( entry.getValue().getFailed(), Definitions.__DASHBOARD_FAILED, label);
-                dsb.add( entry.getValue().getSkipped(), Definitions.__DASHBOARD_SKIPPED, label);
                 dsb.add( entry.getValue().getPassed(), Definitions.__DASHBOARD_PASSED, label);
+                dsb.add( entry.getValue().getSkipped(), Definitions.__DASHBOARD_SKIPPED, label);
             }
             return dsb.build();
         }
