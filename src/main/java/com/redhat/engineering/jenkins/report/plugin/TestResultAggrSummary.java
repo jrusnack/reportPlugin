@@ -1,28 +1,38 @@
 package com.redhat.engineering.jenkins.report.plugin;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.redhat.engineering.jenkins.report.plugin.results.MatrixBuildTestResults;
 
-public class TestResultAggrSummary extends TestResultAggr {
-	private List<TestResultAggr> testResults = new ArrayList<TestResultAggr>();
-
+public class TestResultAggrSummary{
+	private int tests;
+	private int passed;
+	private int failed;
+	private int skipped;
+        
 	public TestResultAggrSummary() {
-		super(null, 0, 0, 0);
 	}
 	
-	public TestResultAggrSummary addTestResult(TestResultAggr testResult) {
-		testResults.add(testResult);
+	public TestResultAggrSummary addTestResult(MatrixBuildTestResults testResult) {
 		
-		tests += testResult.getTests();
-		success += testResult.getSuccess();
-		failed += testResult.getFailed();
-		skipped += testResult.getSkipped();
+		tests += testResult.getTotalTestCount();
+		passed += testResult.getPassedTestCount();
+		failed += testResult.getFailedTestCount();
+		skipped += testResult.getSkippedTestCount();
 		
 		return this;
 	}
-	
-	public List<TestResultAggr> getTestResults() {
-		return testResults;
-	}
+
+    public Integer getFailed() {
+        return failed;
+    }
+
+    public Integer getSkipped() {
+        return skipped;
+    }
+
+    public Integer getPassed() {
+        return passed;
+    }
+        
+        
 	
 }

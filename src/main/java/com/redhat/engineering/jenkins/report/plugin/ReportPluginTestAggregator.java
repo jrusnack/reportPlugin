@@ -12,50 +12,71 @@ package com.redhat.engineering.jenkins.report.plugin;
 
 import com.redhat.engineering.jenkins.report.plugin.results.Filter;
 import com.redhat.engineering.jenkins.report.plugin.results.MatrixBuildTestResults;
-import java.util.HashMap;
-import java.util.Map;
+import hudson.model.AbstractBuild;
+import hudson.model.Run;
+import java.util.Comparator;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  *
  * @author jrusnack
  */
 public class ReportPluginTestAggregator {
-    private Map<Integer, MatrixBuildTestResults> testResults;
+    private TreeMap<Run, MatrixBuildTestResults> testResults;
     
     public ReportPluginTestAggregator(){
-        testResults = new HashMap<Integer, MatrixBuildTestResults>();
+        Comparator<AbstractBuild> comparator = new Comparator<AbstractBuild>(){
+            @Override public int compare(AbstractBuild b1, AbstractBuild b2) {
+                return b1.compareTo(b2);
+            }
+        };
+        // FIXME
+        testResults = new TreeMap<Run, MatrixBuildTestResults>();
     }
     
-    public void addBuildResults(Integer build, MatrixBuildTestResults results){
+    public void addBuildResults(AbstractBuild build, MatrixBuildTestResults results){
         testResults.put(build, results);
     }
     
-    public MatrixBuildTestResults getBuildResults(Integer build){
-        return testResults.get(build);
+    public Set<Run> keySet(){
+        return testResults.keySet();
     }
     
-    public int getPassedTestCount(Integer build) {
-        return testResults.get(build).getPassedTestCount();
+    public Run firstKey(){
+        return testResults.firstKey();
     }
     
-    public int getFailedTestCount(Integer build) {
-        return testResults.get(build).getFailedTestCount();
+    public Run lastKey(){
+        return testResults.lastKey();
     }
     
-    public int getSkippedTestCount(Integer build) {
-        return testResults.get(build).getSkippedTestCount();
+    public MatrixBuildTestResults getBuildResults(Run Run){
+        return testResults.get(Run);
     }
     
-    public void addFilter(Integer build, Filter filter){
-        testResults.get(build).addFilter(filter);
+    public int getPassedTestCount(Run run) {
+        return testResults.get(run).getPassedTestCount();
     }
     
-    public void removeFilter(Integer build){
-        testResults.get(build).removeFilter();
+    public int getFailedTestCount(Run run) {
+        return testResults.get(run).getFailedTestCount();
     }
     
-    public boolean containsKey(Integer build){
-        return testResults.containsKey(build);
+    public int getSkippedTestCount(Run run) {
+        return testResults.get(run).getSkippedTestCount();
+    }
+    
+    public void addFilter(Run run, Filter filter){
+        testResults.get(run).addFilter(filter);
+    }
+    
+    public void removeFilter(Run run){
+        testResults.get(run).removeFilter();
+    }
+    
+    public boolean containsKey(Run run){
+        return testResults.containsKey(run);
     }
     
 }

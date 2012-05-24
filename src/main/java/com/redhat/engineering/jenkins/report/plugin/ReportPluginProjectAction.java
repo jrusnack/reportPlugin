@@ -153,7 +153,7 @@ public class ReportPluginProjectAction implements Action{
 	    if (build == null) {
 		return false;
 	    }
-	    if (testAggregator.containsKey(build.number)) {
+	    if (testAggregator.containsKey(build)) {
 		numPoints++;
 	    }
 	    build = build.getPreviousBuild();
@@ -237,21 +237,21 @@ public class ReportPluginProjectAction implements Action{
 	{
 	    ChartUtil.NumberOnlyBuildLabel label = new ChartUtil.NumberOnlyBuildLabel(build);
 	    
-	    if (testAggregator.containsKey(build.number)) {
+	    if (testAggregator.containsKey(build)) {
 		
 		if(filter != null){
-		    testAggregator.addFilter(build.number, filter);
+		    testAggregator.addFilter(build, filter);
 		}
 		
-		int a = testAggregator.getPassedTestCount(build.number);
+		int a = testAggregator.getPassedTestCount(build);
 		dataset.add(a, "Passed", label);
-		a = testAggregator.getFailedTestCount(build.number);
+		a = testAggregator.getFailedTestCount(build);
 		dataset.add(a, "Failed", label);
-		a = testAggregator.getSkippedTestCount(build.number);
+		a = testAggregator.getSkippedTestCount(build);
 		dataset.add(a , "Skipped", label);
 		
 		if(filter != null){
-		    testAggregator.removeFilter(build.number);
+		    testAggregator.removeFilter(build);
 		}
 		
 	    } else {

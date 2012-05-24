@@ -75,19 +75,19 @@ public class GraphHelper {
           @Override
           public String generateToolTip(CategoryDataset dataset, int row, int column) {
               ChartUtil.NumberOnlyBuildLabel label = (ChartUtil.NumberOnlyBuildLabel) dataset.getColumnKey(column);
-              int buildNum = label.build.number;
+              
               ReportPluginTestAggregator aggregator = label.build.getProject().getAction(ReportPluginProjectAction.class).getTestAggregator();
-              if (! aggregator.containsKey(label.build.number)) {
+              if (! aggregator.containsKey(label.build)) {
                  //there are no testng results associated with this build
                  return "";
               }
               switch (row) {
                   case 0:
-                      return String.valueOf(aggregator.getFailedTestCount(buildNum)) + " Failure(s)";
+                      return String.valueOf(aggregator.getFailedTestCount(label.build)) + " Failure(s)";
                   case 1:
-                     return String.valueOf(aggregator.getPassedTestCount(buildNum)) + " Pass";
+                     return String.valueOf(aggregator.getPassedTestCount(label.build)) + " Pass";
                   case 2:
-                     return String.valueOf(aggregator.getSkippedTestCount(buildNum)) + " Skip(s)";
+                     return String.valueOf(aggregator.getSkippedTestCount(label.build)) + " Skip(s)";
                   default:
                      return "";
               }
