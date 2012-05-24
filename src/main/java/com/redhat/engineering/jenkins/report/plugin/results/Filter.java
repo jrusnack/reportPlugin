@@ -103,11 +103,16 @@ public class Filter {
     
     private void rebuildConfiguration(){    
 	for(Combination c: configuration.keySet()){
-	    if(combinationFilter!= null && c.evalGroovyExpression(axisList, combinationFilter)){
-		configuration.put(c,true);
-	    } else{
-		configuration.put(c, false);
-	    }
+            try{
+                if(combinationFilter!= null && c.evalGroovyExpression(axisList, combinationFilter)){
+                    configuration.put(c,true);
+                } else{
+                    configuration.put(c, false);
+                }
+            }catch(Exception e){
+                // combination filter has axis that does not exist in axis list
+                configuration.put(c, false);
+            }
 	}
 	
     }

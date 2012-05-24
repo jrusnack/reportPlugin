@@ -17,6 +17,7 @@ import com.redhat.engineering.jenkins.report.plugin.results.TestResults;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.MatrixRun;
 import hudson.model.*;
@@ -93,8 +94,8 @@ public class ReportPluginPublisher extends Recorder{
 		/*
 		 * MatrixBuildTestResults will store mapping matrix run -> test results
 		 */
-		MatrixBuildTestResults bResults = new MatrixBuildTestResults(UUID.randomUUID().toString());
-                
+		MatrixBuildTestResults bResults = new MatrixBuildTestResults(UUID.randomUUID().toString()); 
+                bResults.setOwner(mrun.getParentBuild());
 		projectAction.getTestAggregator().addBuildResults(mrun.getParentBuild(), bResults);
 	    }
 	    return true;
