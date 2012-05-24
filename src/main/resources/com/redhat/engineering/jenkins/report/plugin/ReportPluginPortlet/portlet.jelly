@@ -27,7 +27,7 @@ THE SOFTWARE.
     <tr><td>
       <div align="center">
         <img id="graph" src="${it.url}summaryGraph/png?width=${it.graphWidth}&amp;height=${it.graphHeight}" lazymap="${it.url}summaryGraph/map" alt="[Test Summary graph]"/>
-       </div>
+      </div>
      </td></tr>
   </dp:decorate>
 </j:jelly>

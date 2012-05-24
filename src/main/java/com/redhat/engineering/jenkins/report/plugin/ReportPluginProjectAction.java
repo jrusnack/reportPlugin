@@ -82,11 +82,16 @@ public class ReportPluginProjectAction implements Action{
 	confFilteringMethod = ConfigurationFilteringMethod.MATRIX;
 	combinationFilter = "";
 	numLastBuilds = project.getLastBuild()!= null ? project.getLastBuild().number : 0;
-	String uuid = "RP_" + this.project.getName() + "_" + System.currentTimeMillis();
-	filter = new Filter(uuid, this.project.getAxes());
+	filter = getInitializedFilter();
 	firstSelBuildTimestamp = project.getFirstBuild() != null ? project.getFirstBuild().getTimeInMillis() : 0;
         testAggregator = new ReportPluginTestAggregator();
         updateFilteredBuilds();
+    }
+    
+    
+    protected Filter getInitializedFilter(){
+        String uuid = "RP_" + this.project.getName() + "_" + System.currentTimeMillis();
+        return new Filter(uuid, this.project.getAxes());
     }
     
     public String getIconFileName() {
@@ -525,6 +530,7 @@ public class ReportPluginProjectAction implements Action{
     public String getCombinationFilter(){
 	return combinationFilter;
     }
+    
 
     /**
      * Returns axes and theirs values for this project

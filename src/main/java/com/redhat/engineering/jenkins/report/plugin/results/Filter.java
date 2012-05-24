@@ -117,6 +117,11 @@ public class Filter {
 	rebuildConfiguration();
     }
     
+    public String getCombinationFilter(){
+        return combinationFilter;
+    }
+    
+    
     /**
      * Removes Groovy expression provided for filtering and resets combinations to
      * false

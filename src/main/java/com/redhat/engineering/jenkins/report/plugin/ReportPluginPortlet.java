@@ -12,6 +12,7 @@
 
 package com.redhat.engineering.jenkins.report.plugin;
 
+import com.redhat.engineering.jenkins.report.plugin.results.Filter;
 import com.redhat.engineering.jenkins.report.plugin.results.MatrixBuildTestResults;
 import hudson.Extension;
 import hudson.model.Descriptor;
@@ -46,13 +47,15 @@ public class ReportPluginPortlet extends DashboardPortlet {
         private int graphWidth = 300;
         private int graphHeight = 220;
         private int dateRange = 365;
+        private String combinationFilter;
 
         @DataBoundConstructor
-        public ReportPluginPortlet(String name, int graphWidth, int graphHeight, int dateRange) {
+        public ReportPluginPortlet(String name, int graphWidth, int graphHeight, int dateRange, String combinationFilter) {
                 super(name);
             this.graphWidth = graphWidth;
             this.graphHeight = graphHeight;
             this.dateRange = dateRange;
+            this.combinationFilter = combinationFilter;
         }
 
         public int getDateRange() {
@@ -65,6 +68,10 @@ public class ReportPluginPortlet extends DashboardPortlet {
 
         public int getGraphHeight() {
             return graphHeight <= 0 ? 220 : graphHeight;
+        }
+        
+        public String getCombinationFilter(){
+            return combinationFilter;
         }
 
         /**
@@ -91,13 +98,15 @@ public class ReportPluginPortlet extends DashboardPortlet {
             // for each job, for each day, add last build of the day to summary
             for (Job job : getDashboard().getJobs()) {
                     ReportPluginTestAggregator aggregator =  job.getAction(ReportPluginProjectAction.class).getTestAggregator();
+                    Filter filter = job.getAction(ReportPluginProjectAction.class).getInitializedFilter();
+                    filter.addCombinationFilter(combinationFilter);
                     Run firstBuild = aggregator.firstKey();
                     
                     if (firstBuild != null) { // execute only if job has builds
                         LocalDate runDay = new LocalDate(firstBuild.getTimestamp());
                         LocalDate firstDay = (dateRange != 0) ? new LocalDate().minusDays(dateRange) : runDay;
 
-                        for (Run run : aggregator.keySet()){
+                        for (Run run : aggregator.keySet()){                            
                             runDay = new LocalDate(run.getTimestamp());
                             Run nextRun = run.getNextBuild();
 
@@ -108,12 +117,12 @@ public class ReportPluginPortlet extends DashboardPortlet {
                                     || runDay.isBefore(firstDay) && !nextRunDay.isBefore(firstDay)) {
                                     // if next run is not the same day, use this test to summarize
                                     if (nextRunDay.isAfter(runDay)) {
-                                        summarize(summaries, aggregator.getBuildResults(run), (runDay.isBefore(firstDay) ? firstDay : runDay), nextRunDay.minusDays(1));
+                                        summarize(summaries, aggregator.getBuildResults(run), filter, (runDay.isBefore(firstDay) ? firstDay : runDay), nextRunDay.minusDays(1));
                                     }
                                 }
                             } else {
                                 // use this run's test result from last run to today
-                                summarize(summaries, aggregator.getBuildResults(run), (runDay.isBefore(firstDay) ? firstDay : runDay), today);
+                                summarize(summaries, aggregator.getBuildResults(run), filter, (runDay.isBefore(firstDay) ? firstDay : runDay), today);
                             }
 
                         }
@@ -184,7 +193,7 @@ public class ReportPluginPortlet extends DashboardPortlet {
         }
 
         private void summarize(Map<LocalDate, TestResultAggrSummary> summaries,
-            MatrixBuildTestResults results, LocalDate firstDay, LocalDate lastDay) {
+            MatrixBuildTestResults results, Filter filter, LocalDate firstDay, LocalDate lastDay) {
             
             if(results != null){
                 for (LocalDate curr = firstDay; curr.compareTo(lastDay) <= 0; curr = curr.plusDays(1)) {
@@ -193,7 +202,7 @@ public class ReportPluginPortlet extends DashboardPortlet {
                         trs = new TestResultAggrSummary();
                         summaries.put(curr, trs);
                     }
-                    trs.addTestResult(results);
+                    trs.addTestResult(results, filter);
                 }
             }
 

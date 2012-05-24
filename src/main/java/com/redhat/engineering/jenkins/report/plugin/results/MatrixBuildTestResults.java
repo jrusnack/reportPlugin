@@ -374,7 +374,7 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
 		failedConfigurationMethods.addAll(mapRunResults.get(mrun).getFailedConfigs());
 		skippedConfigurationMethods.addAll(mapRunResults.get(mrun).getSkippedConfigs());
 		runResults.add(mapRunResults.get(mrun));
-		testList.addAll(mapRunResults.get(mrun).getTestList());		    
+		testList.addAll(mapRunResults.get(mrun).getTestList());
 	    }
 	}
     }
