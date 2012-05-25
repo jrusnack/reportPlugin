@@ -27,7 +27,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * All credit due to authors of TestNG plugin
  */
 public class GraphHelper {
-     public static JFreeChart createChart(StaplerRequest req, CategoryDataset dataset) {
+     public static JFreeChart createChart( CategoryDataset dataset) {
 
       final JFreeChart chart = ChartFactory.createStackedAreaChart(
           null,                     // chart title
@@ -65,34 +65,7 @@ public class GraphHelper {
       final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
       rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 
-      StackedAreaRenderer ar = new StackedAreaRenderer2() {
-          @Override
-          public String generateURL(CategoryDataset dataset, int row, int column) {
-              ChartUtil.NumberOnlyBuildLabel label = (ChartUtil.NumberOnlyBuildLabel) dataset.getColumnKey(column);
-              return  label.build.getNumber() + "/" + Definitions.__URL_NAME + "/";
-          }
-
-          @Override
-          public String generateToolTip(CategoryDataset dataset, int row, int column) {
-              ChartUtil.NumberOnlyBuildLabel label = (ChartUtil.NumberOnlyBuildLabel) dataset.getColumnKey(column);
-              
-              ReportPluginTestAggregator aggregator = label.build.getProject().getAction(ReportPluginProjectAction.class).getTestAggregator();
-              if (! aggregator.containsKey(label.build)) {
-                 //there are no testng results associated with this build
-                 return "";
-              }
-              switch (row) {
-                  case 0:
-                      return String.valueOf(aggregator.getFailedTestCount(label.build)) + " Failure(s)";
-                  case 1:
-                     return String.valueOf(aggregator.getPassedTestCount(label.build)) + " Pass";
-                  case 2:
-                     return String.valueOf(aggregator.getSkippedTestCount(label.build)) + " Skip(s)";
-                  default:
-                     return "";
-              }
-          }
-      };
+      StackedAreaRenderer ar = new StackedAreaRenderer2();
 
       plot.setRenderer(ar);
       ar.setSeriesPaint(0, ColorPalette.RED); // Failures

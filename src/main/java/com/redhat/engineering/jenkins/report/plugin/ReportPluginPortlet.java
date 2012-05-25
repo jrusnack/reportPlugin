@@ -14,6 +14,7 @@ package com.redhat.engineering.jenkins.report.plugin;
 
 import com.redhat.engineering.jenkins.report.plugin.results.Filter;
 import com.redhat.engineering.jenkins.report.plugin.results.MatrixBuildTestResults;
+import com.redhat.engineering.jenkins.report.plugin.util.GraphHelper;
 import hudson.Extension;
 import hudson.model.Descriptor;
 import hudson.model.Job;
@@ -130,53 +131,10 @@ public class ReportPluginPortlet extends DashboardPortlet {
             }
 
             return new Graph(-1, getGraphWidth(), getGraphHeight()) {
-
-                        @Override
-                        protected JFreeChart createGraph() {
-                                final JFreeChart chart = ChartFactory.createStackedAreaChart(
-                            null,                   // chart title
-                            Definitions.__DASHBOARD_DATE,                   // category axis label
-                            Definitions.__DASHBOARD_COUNT,                  // value axis label
-                            buildDataSet(summaries), // data
-                            PlotOrientation.VERTICAL, // orientation
-                            false,                     // include legend
-                            false,                     // tooltips
-                            false                     // urls
-                        );
-
-                        chart.setBackgroundPaint(Color.white);
-
-                        final CategoryPlot plot = chart.getCategoryPlot();
-
-                        plot.setBackgroundPaint(Color.WHITE);
-                        plot.setOutlinePaint(null);
-                        plot.setForegroundAlpha(0.8f);
-                        plot.setRangeGridlinesVisible(true);
-                        plot.setRangeGridlinePaint(Color.black);
-
-                        CategoryAxis domainAxis = new ShiftedCategoryAxis(null);
-                        plot.setDomainAxis(domainAxis);
-                        domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
-                        domainAxis.setLowerMargin(0.0);
-                        domainAxis.setUpperMargin(0.0);
-                        domainAxis.setCategoryMargin(0.0);
-
-                        final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-                        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-
-                        StackedAreaRenderer ar = new StackedAreaRenderer2();
-                        plot.setRenderer(ar);
-                        ar.setSeriesPaint(0,ColorPalette.RED); // Failures.
-                        ar.setSeriesPaint(1,ColorPalette.YELLOW); // Skips.
-                        ar.setSeriesPaint(2,ColorPalette.BLUE); // Total.
-
-                        // crop extra space around the graph
-                        plot.setInsets(new RectangleInsets(0,0,0,5.0));
-
-                                return chart;
-                        }
-
-                };
+                protected JFreeChart createGraph() {
+                    return GraphHelper.createChart(buildDataSet(summaries));
+                }
+            };
         }
 
         private CategoryDataset buildDataSet(Map<LocalDate, TestResultAggrSummary> summaries) {
@@ -186,8 +144,8 @@ public class ReportPluginPortlet extends DashboardPortlet {
                 LocalDateLabel label = new LocalDateLabel(entry.getKey());
                 //FIXME
                 dsb.add( entry.getValue().getFailed(), Definitions.__DASHBOARD_FAILED, label);
-                dsb.add( entry.getValue().getPassed(), Definitions.__DASHBOARD_PASSED, label);
                 dsb.add( entry.getValue().getSkipped(), Definitions.__DASHBOARD_SKIPPED, label);
+                dsb.add( entry.getValue().getPassed(), Definitions.__DASHBOARD_PASSED, label);
             }
             return dsb.build();
         }

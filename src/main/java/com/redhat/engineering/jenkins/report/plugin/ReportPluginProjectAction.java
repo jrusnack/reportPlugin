@@ -222,7 +222,7 @@ public class ReportPluginProjectAction implements Action{
 	populateDataSetBuilder(dataSetBuilder, filter);
 	new hudson.util.Graph(-1, getGraphWidth(), getGraphHeight()) {
 	    protected JFreeChart createGraph() {
-		return GraphHelper.createChart(req, dataSetBuilder.build());
+		return GraphHelper.createChart( dataSetBuilder.build());
 	    }
 	}.doPng(req,rsp);
     }
