@@ -37,7 +37,7 @@ THE SOFTWARE.
       <f:textbox name="dateRange" field="dateRange" value="${it.dateRange}"/>
     </f:entry>
   <!--</f:optionalBlock>-->
-  <f:entry title="${%Which matrix combinations to include:}">
+  <f:entry title="${%Filter matrix configurations:}">
     <f:textbox name="combinationFilter" field="combinationFilter" value="${it.combinationFilter}"/>
   </f:entry>
 </j:jelly>

@@ -8,9 +8,9 @@
 
   <groupId>com.redhat.engineering.jenkins.report.plugin</groupId>
   <artifactId>ReportPlugin</artifactId>
-  <version>0.1</version>
+  <version>0.9</version>
   <name>Report Plugin</name>
-  <description>Just a work in progress. Forked from TestNG plugin. </description>
+  <description>Beta version. Ready for testing. </description>
   <packaging>hpi</packaging>
   
 
@@ -28,6 +28,13 @@
       <url>http://maven.glassfish.org/content/groups/public/</url>
     </pluginRepository>
   </pluginRepositories>
+
+	<licenses>
+		<license>
+			<name>GNU GPLv2</name>
+			<url>http://www.gnu.org/licenses/gpl-2.0.html</url>
+		</license>
+	</licenses>
 
 	<developers>
         <developer>
@@ -51,12 +58,14 @@
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>dashboard-view</artifactId>
             <version>2.2</version>
-            <type>jar</type>
+            <optional>true</optional>
+			<type>jar</type>
         </dependency>
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
             <version>1.6</version>
+			<optional>true</optional>
             <type>jar</type>
         </dependency>
     </dependencies>
