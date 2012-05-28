@@ -132,6 +132,7 @@ public class ReportPluginProjectAction implements Action{
     
     
     public boolean combinationExists( AbstractProject ap, Combination c){
+        if(c == null) return false;
 	if(ap instanceof MatrixProject){
 	    MatrixProject mp = (MatrixProject) ap;
 	    MatrixConfiguration mc = mp.getItem(c);
