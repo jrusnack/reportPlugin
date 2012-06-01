@@ -82,7 +82,7 @@ public class ReportPluginProjectAction implements Action {
         
         ReportPluginProjectAction t = project.getAction(ReportPluginProjectAction.class);
         
-        ReportPluginUtil.initAllBuilds(project, testAggregator, combinationFilter, Definitions.__PREFIX, null);
+        ReportPluginUtil.initAllBuilds(project, testAggregator, Definitions.__PREFIX, null);
         updateFilteredBuilds();
     }
 

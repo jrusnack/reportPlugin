@@ -565,7 +565,7 @@ public class Parser {
 	    reportDir.mkdirs();
 	    int i = 0;
 	    for (FilePath report : paths) {
-		String name = prefix + identifier + (i > 0 ? "-" + i : "") + ".xml";
+		String name = prefix + identifier.toLowerCase() + (i > 0 ? "-" + i : "") + ".xml";
 		i++;
 		FilePath dst = reportDir.child(name);
 		report.copyTo(dst);
@@ -579,10 +579,14 @@ public class Parser {
     
     public static TestResults loadResults(AbstractBuild<?, ?> build, FilePath reportDir, PrintStream logger, String prefix, String identifier) {
 	
-	
+	// FIXME !!! test commands
 	FilePath[] paths = null;
+        FilePath[] paths2 = null;
+        String name1 = prefix + "*.xml";
+        String name2 = prefix + identifier.toLowerCase() +"*.xml";
 	try {
-	    paths = reportDir.list(prefix+identifier+"*.xml");
+	    paths = reportDir.list(name1);
+            paths2 = reportDir.list(name2);
 	} catch (Exception e) {
 	    //do nothing
 	}

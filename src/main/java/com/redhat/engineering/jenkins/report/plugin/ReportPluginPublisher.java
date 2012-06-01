@@ -154,7 +154,8 @@ public class ReportPluginPublisher extends Recorder{
 	    return true;
 	}
 
-	return ReportPluginUtil.gatherTests(mrun, projectAction.getTestAggregator(), reportLocationPattern, Definitions.__PREFIX , listener.getLogger());
+	return ReportPluginUtil.gatherTests(mrun, projectAction.getTestAggregator(), 
+                Definitions.__PREFIX, mrun.getParent().getCombination().toString() , listener.getLogger());
     }
     
     
