@@ -31,7 +31,6 @@ public class ReportPluginTestAggregator {
                 return b1.compareTo(b2);
             }
         };
-        // FIXME
         testResults = new TreeMap<Run, MatrixBuildTestResults>();
     }
     
@@ -55,6 +54,7 @@ public class ReportPluginTestAggregator {
         return testResults.get(Run);
     }
     
+    // FIXME: check null
     public int getPassedTestCount(Run run) {
         return testResults.get(run).getPassedTestCount();
     }

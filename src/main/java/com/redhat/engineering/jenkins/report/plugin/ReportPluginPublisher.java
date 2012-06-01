@@ -121,22 +121,22 @@ public class ReportPluginPublisher extends Recorder{
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher,
 	BuildListener listener) throws InterruptedException, IOException{
 	
-	if(!(build instanceof MatrixRun)){
+        if(!(build instanceof MatrixRun)){
 	    return false;
 	}
-	
-	MatrixRun mrun = (MatrixRun) build;
-	
-	PrintStream logger = listener.getLogger();
-	logger.println("[Report Plugin] Report files processing: START");	
-	logger.println("[Report Plugin] Starting to process Matrix Run.");
-	logger.println("[Report Plugin] Looking for results reports in workspace"
-		+ " using pattern: " + reportLocationPattern);
-	    
-	    
-	FilePath[] paths = Parser.locateReports(mrun.getWorkspace(), reportLocationPattern);
+        MatrixRun mrun = (MatrixRun) build;
+        PrintStream logger = listener.getLogger();        
+        
+        if(logger != null){
+            logger.println("[Report Plugin] Report files processing: START");	
+            logger.println("[Report Plugin] Starting to process Matrix Run.");
+            logger.println("[Report Plugin] Looking for results reports in workspace"
+                    + " using pattern: " + reportLocationPattern);
+        }
+        
+        FilePath[] paths = Parser.locateReports(mrun.getWorkspace(), reportLocationPattern);
 	if (paths.length == 0) {
-	    logger.println("Did not find any matching files.");
+	    if(logger != null) logger.println("Did not find any matching files.");
 	    //build can still continue
 	    return true;
 	}
@@ -147,53 +147,14 @@ public class ReportPluginPublisher extends Recorder{
 	paths = Parser.checkReports(build, paths, logger);
 
 
-	boolean filesSaved = Parser.saveReports(Parser.getReportDir(mrun), paths, logger, "test-results");
+	boolean filesSaved = Parser.saveReports(Parser.getReportDir(mrun.getParentBuild()), paths, 
+                logger, Definitions.__PREFIX, mrun.getParent().getCombination().toString());
 	if (!filesSaved) {
-	    logger.println("Failed to save TestNG XML reports");
+	    if(logger != null) logger.println("Failed to save TestNG XML reports");
 	    return true;
 	}
 
-	TestResults rResults = new MatrixRunTestResults(UUID.randomUUID().toString());
-
-	/*
-	 * Parse results
-	 */
-	try {
-	    rResults = Parser.loadResults(mrun, logger, "test-results");
-	} catch (Throwable t) {
-	    /*
-	    * don't fail build if parser barfs, only 
-	    * print out the exception to console.
-	    */
-	    t.printStackTrace(logger);
-	} 
-
-	if (rResults.getTestList().size() > 0) {
-	    /*
-	     * Set owner
-	     */
-	    rResults.setOwner(mrun);
-	    
-	    /*
-	     * Add matrix run rResults to parent build`s bResults
-	     */ 
-            MatrixBuildTestResults bResults = projectAction.getTestAggregator().getBuildResults(mrun.getParentBuild());
-            bResults.addMatrixRunTestResults(mrun.toString(), mrun.getParent().getCombination(), rResults);
-            rResults.setParent(bResults);
-            	    
-	    if (rResults.getFailedTestCount() > 0) {
-		mrun.setResult(Result.UNSTABLE);
-	    }
-	    
-	} else {
-	    logger.println("Found matching files but did not find any test results.");
-	    return true;
-	} 
-
-	logger.println("[Report Plugin] Finished processing Matrix Run.");	
-	logger.println("[Report Plugin] Report Processing: FINISH");
-	
-	return true;
+	return ReportPluginUtil.gatherTests(mrun, projectAction.getTestAggregator(), reportLocationPattern, Definitions.__PREFIX , listener.getLogger());
     }
     
     

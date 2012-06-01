@@ -99,6 +99,10 @@ public class Parser {
 
    public Parser(PrintStream logger) {
       this();
+      setLogger(logger);
+   }
+   
+   public void setLogger(PrintStream logger){
       this.logger = logger;
    }
 
@@ -480,7 +484,7 @@ public class Parser {
      * Locate TestNG test reports under workspace/reportLocationPattern
      */
     public static FilePath[] locateReports(FilePath workspace, String reportLocationPattern)
-    throws IOException, InterruptedException{
+    throws   IOException, InterruptedException{
 	// First use ant-style pattern
       try {
          FilePath[] ret = workspace.list(reportLocationPattern);
@@ -528,17 +532,17 @@ public class Parser {
 		* and not milliseconds
 		*/
 		if (build.getTimestamp().getTimeInMillis() / 1000 <= report.lastModified() / 1000) {
-		filePathList.add(report);
+                    filePathList.add(report);
 		} else {
-		logger.println(report.getName() + " was last modified before "
+                    if(logger != null) logger.println(report.getName() + " was last modified before "
 			    + "this build started. Ignoring it.");
 		}
 	    } catch (IOException e) {
 		// just log the exception
-		e.printStackTrace(logger);
+		if(logger != null) e.printStackTrace(logger);
 	    } catch (InterruptedException e) {
 		// just log the exception
-		e.printStackTrace(logger);
+		if(logger != null) e.printStackTrace(logger);
 	    }
 	}
 	return filePathList.toArray(new FilePath[]{});
@@ -555,30 +559,30 @@ public class Parser {
      * @param prefix	    prefix of filename
      * @return		    True for success
      */
-    public static boolean saveReports(FilePath reportDir, FilePath[] paths, PrintStream logger, String prefix) {
+    public static boolean saveReports(FilePath reportDir, FilePath[] paths, PrintStream logger, String prefix, String identifier) {
 	logger.println("Saving reports...");
 	try {
 	    reportDir.mkdirs();
 	    int i = 0;
 	    for (FilePath report : paths) {
-		String name = prefix + (i > 0 ? "-" + i : "") + ".xml";
+		String name = prefix + identifier + (i > 0 ? "-" + i : "") + ".xml";
 		i++;
 		FilePath dst = reportDir.child(name);
 		report.copyTo(dst);
 	    }
 	} catch (Exception e) {
-	    e.printStackTrace(logger);
+	    if(logger != null) e.printStackTrace(logger);
 	    return false;
 	}
 	return true;
     }
     
-    public static TestResults loadResults(AbstractBuild<?, ?> build, PrintStream logger, String prefix) {
+    public static TestResults loadResults(AbstractBuild<?, ?> build, FilePath reportDir, PrintStream logger, String prefix, String identifier) {
 	
-	FilePath testngDir = getReportDir(build);
+	
 	FilePath[] paths = null;
 	try {
-	    paths = testngDir.list(prefix+"*.xml");
+	    paths = reportDir.list(prefix+identifier+"*.xml");
 	} catch (Exception e) {
 	    //do nothing
 	}
@@ -596,8 +600,10 @@ public class Parser {
 		
 	    }
 	}
-	    
-	Parser parser = new Parser(logger);
+	
+        Parser parser = new Parser();
+        if(logger!= null) parser.setLogger(logger);
+        
 	if(build instanceof MatrixRun){
 	    TestResults result = parser.parse(paths, true);
 	    result.setOwner(build);

@@ -107,7 +107,7 @@ public class ReportPluginPortlet extends DashboardPortlet {
                         LocalDate runDay = new LocalDate(firstBuild.getTimestamp());
                         LocalDate firstDay = (dateRange != 0) ? new LocalDate().minusDays(dateRange) : runDay;
 
-                        for (Run run : aggregator.keySet()){                            
+                        for (Run run : aggregator.keySet()){
                             runDay = new LocalDate(run.getTimestamp());
                             Run nextRun = run.getNextBuild();
 
