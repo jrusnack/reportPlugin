@@ -26,12 +26,6 @@ public class ReportPluginTestAggregator {
     private TreeMap<Run, MatrixBuildTestResults> testResults;
     
     public ReportPluginTestAggregator(){
-        Comparator<AbstractBuild> comparator = new Comparator<AbstractBuild>(){
-            @Override public int compare(AbstractBuild b1, AbstractBuild b2) {
-                return b1.compareTo(b2);
-            }
-        };
-        // FIXME
         testResults = new TreeMap<Run, MatrixBuildTestResults>();
     }
     
