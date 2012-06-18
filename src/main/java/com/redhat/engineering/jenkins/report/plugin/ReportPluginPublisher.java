@@ -42,6 +42,7 @@ public class ReportPluginPublisher extends Recorder {
 
     public final String reportLocationPattern;
     public ReportPluginProjectAction projectAction;
+    static final Object lock = new Object();
 
     /**
      * Get location of reports from project configuration page
@@ -89,15 +90,18 @@ public class ReportPluginPublisher extends Recorder {
              * If not initialized, create MatrixBuildTestResults, add them to
              * ReportPluginBuildAction and add it to build actions
              */
-            if (mrun.getParentBuild().getAction(ReportPluginBuildAction.class) == null) {
-                /*
-                 * MatrixBuildTestResults will store mapping matrix run -> test
-                 * results
-                 */
-                MatrixBuildTestResults bResults = new MatrixBuildTestResults(UUID.randomUUID().toString());
-                bResults.setOwner(mrun.getParentBuild());
-                mrun.getParentBuild().getActions().add(new ReportPluginBuildAction(bResults)); 
+            synchronized (lock) {
+                if (mrun.getParentBuild().getAction(ReportPluginBuildAction.class) == null) {
+                    /*
+                     * MatrixBuildTestResults will store mapping matrix run ->
+                     * test results
+                     */
+                    MatrixBuildTestResults bResults = new MatrixBuildTestResults(UUID.randomUUID().toString());
+                    bResults.setOwner(mrun.getParentBuild());
+                    mrun.getParentBuild().getActions().add(new ReportPluginBuildAction(bResults));
+                }
             }
+
             return true;
         }
         /*
