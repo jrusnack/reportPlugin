@@ -8,7 +8,7 @@
 
   <groupId>com.redhat.engineering.jenkins.report.plugin</groupId>
   <artifactId>ReportPlugin</artifactId>
-  <version>0.9</version>
+  <version>0.91</version>
   <name>Report Plugin</name>
   <description>Beta version. Ready for testing. </description>
   <packaging>hpi</packaging>

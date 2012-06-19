@@ -59,8 +59,6 @@ public class ReportPluginProjectAction implements Action{
     private long lastSelBuildTimestamp;
     private RunList<MatrixBuild> builds;
     
-    private ReportPluginTestAggregator testAggregator;
-    
     enum BuildFilteringMethod {
 	ALL, RECENT, INTERVAL
     }
@@ -84,7 +82,6 @@ public class ReportPluginProjectAction implements Action{
 	numLastBuilds = project.getLastBuild()!= null ? project.getLastBuild().number : 0;
 	filter = getInitializedFilter();
 	firstSelBuildTimestamp = project.getFirstBuild() != null ? project.getFirstBuild().getTimeInMillis() : 0;
-        testAggregator = new ReportPluginTestAggregator();
         updateFilteredBuilds();
     }
     
@@ -115,9 +112,6 @@ public class ReportPluginProjectAction implements Action{
 	return project;
     }
     
-    public ReportPluginTestAggregator getTestAggregator(){
-        return testAggregator;
-    }
     
     
     /**
@@ -159,7 +153,7 @@ public class ReportPluginProjectAction implements Action{
 	    if (build == null) {
 		return false;
 	    }
-	    if (testAggregator.containsKey(build)) {
+	    if (build.getAction(ReportPluginBuildAction.class) != null) {
 		numPoints++;
 	    }
 	    build = build.getPreviousBuild();
@@ -242,22 +236,22 @@ public class ReportPluginProjectAction implements Action{
 	for (AbstractBuild<?, ?> build : builds) 
 	{
 	    ChartUtil.NumberOnlyBuildLabel label = new ChartUtil.NumberOnlyBuildLabel(build);
-	    
-	    if (testAggregator.containsKey(build)) {
+	    ReportPluginBuildAction bAction = build.getAction(ReportPluginBuildAction.class);
+	    if (bAction != null) {
 		
 		if(filter != null){
-		    testAggregator.addFilter(build, filter);
+		    bAction.addFilter(build, filter);
 		}
 		
-		int a = testAggregator.getPassedTestCount(build);
+		int a = bAction.getPassedTestCount(build);
 		dataset.add(a, "Passed", label);
-		a = testAggregator.getFailedTestCount(build);
+		a = bAction.getFailedTestCount(build);
 		dataset.add(a, "Failed", label);
-		a = testAggregator.getSkippedTestCount(build);
+		a = bAction.getSkippedTestCount(build);
 		dataset.add(a , "Skipped", label);
 		
 		if(filter != null){
-		    testAggregator.removeFilter(build);
+		    bAction.removeFilter(build);
 		}
 		
 	    } else {
