@@ -1,10 +1,6 @@
 
 package com.redhat.engineering.jenkins.report.plugin.util;
 
-import com.redhat.engineering.jenkins.report.plugin.Definitions;
-import com.redhat.engineering.jenkins.report.plugin.ReportPluginProjectAction;
-import com.redhat.engineering.jenkins.report.plugin.ReportPluginTestAggregator;
-import hudson.util.ChartUtil;
 import hudson.util.ColorPalette;
 import hudson.util.ShiftedCategoryAxis;
 import hudson.util.StackedAreaRenderer2;
@@ -21,7 +17,6 @@ import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleEdge;
 import org.jfree.ui.RectangleInsets;
-import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * All credit due to authors of TestNG plugin
